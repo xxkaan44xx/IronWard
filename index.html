@@ -1,0 +1,321 @@
+{% extends "base.html" %}
+
+{% block title %}Anasayfa - {{ config.title }}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="row mb-5">
+    <div class="col-12">
+        <div class="card bg-gradient-primary border-0 text-white">
+            <div class="card-body py-5">
+                <div class="container">
+                    <div class="row align-items-center">
+                        <div class="col-lg-8">
+                            <h1 class="display-4 fw-bold mb-3">
+                                <i class="fas fa-robot me-3"></i>
+                                IronWard - Discord Bot
+                            </h1>
+                            <p class="lead mb-4">
+                                Gelişmiş moderasyon özellikleri ile Discord sunucunuzu profesyonelce yönetin.
+                                50+ komut, otomatik moderasyon, detaylı loglama ve çok daha fazlası.
+                            </p>
+                            <div class="d-flex gap-3">
+                                <a href="{{ url_for('dashboard') }}" class="btn btn-light btn-lg">
+                                    <i class="fas fa-tachometer-alt me-2"></i>
+                                    Dashboard'a Git
+                                </a>
+                                <a href="{{ url_for('guilds') }}" class="btn btn-outline-light btn-lg">
+                                    <i class="fas fa-server me-2"></i>
+                                    Sunucularım
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-lg-4 text-center">
+                            <div class="position-relative">
+                                <i class="fas fa-shield-alt fa-10x opacity-25"></i>
+                                <div class="position-absolute top-50 start-50 translate-middle">
+                                    <i class="fas fa-check-circle fa-4x text-success"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Grid -->
+<div class="row mb-5">
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card bg-secondary border-0 h-100">
+            <div class="card-body text-center p-4">
+                <div class="text-primary mb-3">
+                    <i class="fas fa-shield-alt fa-3x"></i>
+                </div>
+                <h5 class="card-title">Güçlü Moderasyon</h5>
+                <p class="card-text text-muted">
+                    Ban, kick, mute, warn ve daha fazlası. Gelişmiş moderasyon araçları ile sunucunuzu koruyun.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card bg-secondary border-0 h-100">
+            <div class="card-body text-center p-4">
+                <div class="text-success mb-3">
+                    <i class="fas fa-robot fa-3x"></i>
+                </div>
+                <h5 class="card-title">Otomatik Sistem</h5>
+                <p class="card-text text-muted">
+                    Spam koruması, otomatik mute/ban kaldırma, akıllı moderasyon sistemi.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card bg-secondary border-0 h-100">
+            <div class="card-body text-center p-4">
+                <div class="text-info mb-3">
+                    <i class="fas fa-chart-line fa-3x"></i>
+                </div>
+                <h5 class="card-title">Detaylı İstatistikler</h5>
+                <p class="card-text text-muted">
+                    Kapsamlı analitikler, moderasyon raporları ve performans takibi.
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-4">
+        <div class="card bg-secondary border-0 h-100">
+            <div class="card-body text-center p-4">
+                <div class="text-warning mb-3">
+                    <i class="fas fa-language fa-3x"></i>
+                </div>
+                <h5 class="card-title">Çoklu Dil</h5>
+                <p class="card-text text-muted">
+                    Türkçe ve İngilizce desteği. Sunucu bazında dil seçimi yapabilirsiniz.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="row mb-5">
+    <div class="col-12">
+        <h3 class="text-light mb-4">
+            <i class="fas fa-chart-bar me-2"></i>
+            Hızlı İstatistikler
+        </h3>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-primary border-0">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-white-50 mb-1">Toplam Sunucu</h6>
+                        <h3 class="mb-0 text-white" id="total-guilds">-</h3>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="fas fa-server fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-success border-0">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-white-50 mb-1">Toplam Uyarı</h6>
+                        <h3 class="mb-0 text-white" id="total-warnings">-</h3>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="fas fa-exclamation-triangle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-danger border-0">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-white-50 mb-1">Aktif Banlar</h6>
+                        <h3 class="mb-0 text-white" id="active-bans">-</h3>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="fas fa-ban fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-warning border-0">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-white-50 mb-1">Aktif Susturma</h6>
+                        <h3 class="mb-0 text-white" id="active-mutes">-</h3>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="fas fa-volume-mute fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card bg-secondary border-0">
+            <div class="card-header bg-transparent border-bottom border-dark">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-clock me-2"></i>
+                    Son Aktiviteler
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="recent-activity-list">
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-spinner fa-spin fa-2x mb-3"></i>
+                        <p>Aktiviteler yükleniyor...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card bg-secondary border-0">
+            <div class="card-header bg-transparent border-bottom border-dark">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-tools me-2"></i>
+                    Hızlı Eylemler
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('guilds') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-server me-2"></i>
+                        Sunucuları Yönet
+                    </a>
+                    <a href="{{ url_for('moderation') }}" class="btn btn-outline-success">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        Moderasyon Paneli
+                    </a>
+                    <a href="{{ url_for('analytics') }}" class="btn btn-outline-info">
+                        <i class="fas fa-chart-line me-2"></i>
+                        Analizleri Görüntüle
+                    </a>
+                    <a href="{{ url_for('ai_assistant') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-robot me-2"></i>
+                        AI Asistan
+                    </a>
+                    <a href="{{ url_for('settings') }}" class="btn btn-outline-warning">
+                        <i class="fas fa-cogs me-2"></i>
+                        Ayarları Düzenle
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card bg-secondary border-0 mt-4">
+            <div class="card-header bg-transparent border-bottom border-dark">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Bot Durumu
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <span class="badge bg-success me-2">
+                        <i class="fas fa-circle"></i>
+                    </span>
+                    <span>Bot Çevrimiçi</span>
+                </div>
+                <div class="small text-muted">
+                    <div class="mb-2">
+                        <strong>Ping:</strong> <span id="bot-ping">-</span>ms
+                    </div>
+                    <div class="mb-2">
+                        <strong>Uptime:</strong> <span id="bot-uptime">-</span>
+                    </div>
+                    <div>
+                        <strong>Sürüm:</strong> {{ config.version }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Load initial stats
+    loadStats();
+    loadRecentActivity();
+    
+    // Refresh stats every 30 seconds
+    setInterval(loadStats, 30000);
+    setInterval(loadRecentActivity, 60000);
+    
+    function loadStats() {
+        $.get('/api/stats', function(data) {
+            $('#total-guilds').text(data.total_guilds || 0);
+            $('#total-warnings').text(data.total_warnings || 0);
+            $('#active-bans').text(data.active_bans || 0);
+            $('#active-mutes').text(data.active_mutes || 0);
+        }).fail(function() {
+            console.log('Stats yüklenemedi');
+        });
+    }
+    
+    function loadRecentActivity() {
+        $.get('/api/recent-activity?limit=10', function(data) {
+            let html = '';
+            
+            if (data.length === 0) {
+                html = '<div class="text-center text-muted py-4">Henüz aktivite bulunmuyor.</div>';
+            } else {
+                data.forEach(function(activity) {
+                    const date = new Date(activity.timestamp).toLocaleString('tr-TR');
+                    html += `
+                        <div class="border-bottom border-dark pb-2 mb-2">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <strong>${activity.action}</strong>
+                                    <small class="text-muted d-block">
+                                        Kullanıcı: ${activity.target_id} | Moderatör: ${activity.moderator_id}
+                                    </small>
+                                </div>
+                                <small class="text-muted">${date}</small>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            
+            $('#recent-activity-list').html(html);
+        }).fail(function() {
+            $('#recent-activity-list').html('<div class="text-center text-danger py-4">Aktiviteler yüklenemedi.</div>');
+        });
+    }
+});
+</script>
+{% endblock %}

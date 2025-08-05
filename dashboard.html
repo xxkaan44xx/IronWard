@@ -1,0 +1,406 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - {{ config.title }}{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="text-light mb-1">
+                    <i class="fas fa-tachometer-alt me-2"></i>
+                    Dashboard
+                </h2>
+                <p class="text-muted mb-0">Bot durumu ve genel istatistikleri görüntüleyin</p>
+            </div>
+            <div>
+                <button class="btn btn-outline-primary" onclick="refreshData()">
+                    <i class="fas fa-sync-alt me-2"></i>
+                    Yenile
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Stats Cards -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-primary border-0">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-white-50 mb-1">Toplam Sunucu</h6>
+                        <h3 class="mb-0 text-white">{{ stats.total_guilds }}</h3>
+                        <small class="text-white-50">Aktif sunucular</small>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="fas fa-server fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-success border-0">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-white-50 mb-1">Toplam Uyarı</h6>
+                        <h3 class="mb-0 text-white">{{ stats.total_warnings }}</h3>
+                        <small class="text-white-50">Verilen uyarılar</small>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="fas fa-exclamation-triangle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-danger border-0">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-white-50 mb-1">Toplam Ban</h6>
+                        <h3 class="mb-0 text-white">{{ stats.total_bans }}</h3>
+                        <small class="text-white-50">Verilen banlar</small>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="fas fa-ban fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-warning border-0">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-white-50 mb-1">Toplam Mute</h6>
+                        <h3 class="mb-0 text-white">{{ stats.total_mutes }}</h3>
+                        <small class="text-white-50">Verilen susturmalar</small>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="fas fa-volume-mute fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="row">
+    <!-- Recent Moderation Logs -->
+    <div class="col-lg-8 mb-4">
+        <div class="card bg-secondary border-0">
+            <div class="card-header bg-transparent border-bottom border-dark">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-history me-2"></i>
+                        Son Moderasyon Logları
+                    </h5>
+                    <a href="{{ url_for('moderation') }}" class="btn btn-sm btn-outline-primary">
+                        Tümünü Görüntüle
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if recent_logs %}
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Aksiyon</th>
+                                    <th>Hedef</th>
+                                    <th>Moderatör</th>
+                                    <th>Tarih</th>
+                                    <th>Sebep</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for log in recent_logs %}
+                                <tr>
+                                    <td>
+                                        {% if log.action == 'ban' %}
+                                            <span class="badge bg-danger">
+                                                <i class="fas fa-ban me-1"></i>Ban
+                                            </span>
+                                        {% elif log.action == 'kick' %}
+                                            <span class="badge bg-warning">
+                                                <i class="fas fa-door-open me-1"></i>Kick
+                                            </span>
+                                        {% elif log.action == 'mute' %}
+                                            <span class="badge bg-secondary">
+                                                <i class="fas fa-volume-mute me-1"></i>Mute
+                                            </span>
+                                        {% elif log.action == 'warn' %}
+                                            <span class="badge bg-info">
+                                                <i class="fas fa-exclamation-triangle me-1"></i>Warn
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-primary">{{ log.action }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <code>{{ log.target_id }}</code>
+                                    </td>
+                                    <td>
+                                        <code>{{ log.moderator_id }}</code>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            {{ log.timestamp.strftime('%d.%m.%Y %H:%M') if log.timestamp else 'N/A' }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <small>{{ log.reason[:30] }}{% if log.reason|length > 30 %}...{% endif %}</small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-inbox fa-3x mb-3 opacity-50"></i>
+                        <p>Henüz moderasyon logu bulunmuyor.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Server List & Quick Actions -->
+    <div class="col-lg-4">
+        <!-- Active Servers -->
+        <div class="card bg-secondary border-0 mb-4">
+            <div class="card-header bg-transparent border-bottom border-dark">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-server me-2"></i>
+                    Aktif Sunucular
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if active_guilds %}
+                    {% for guild in active_guilds[:5] %}
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div>
+                                <h6 class="mb-1">Sunucu {{ guild.guild_id }}</h6>
+                                <small class="text-muted">
+                                    <i class="fas fa-language me-1"></i>{{ guild.language|upper }}
+                                    <span class="mx-2">|</span>
+                                    <i class="fas fa-terminal me-1"></i>{{ guild.prefix }}
+                                </small>
+                            </div>
+                            <a href="{{ url_for('guild_detail', guild_id=guild.guild_id) }}" 
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                        </div>
+                    {% endfor %}
+                    
+                    {% if active_guilds|length > 5 %}
+                        <div class="text-center mt-3">
+                            <a href="{{ url_for('guilds') }}" class="btn btn-sm btn-outline-light">
+                                +{{ active_guilds|length - 5 }} daha
+                            </a>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center text-muted py-3">
+                        <i class="fas fa-server fa-2x mb-2 opacity-50"></i>
+                        <p class="mb-0">Henüz sunucu bulunmuyor.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="card bg-secondary border-0">
+            <div class="card-header bg-transparent border-bottom border-dark">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-bolt me-2"></i>
+                    Hızlı Eylemler
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('guilds') }}" class="btn btn-outline-primary">
+                        <i class="fas fa-plus me-2"></i>
+                        Sunucu Ekle
+                    </a>
+                    <a href="{{ url_for('moderation') }}" class="btn btn-outline-success">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        Moderasyon Paneli
+                    </a>
+                    <a href="{{ url_for('analytics') }}" class="btn btn-outline-info">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Analizler
+                    </a>
+                    <a href="{{ url_for('settings') }}" class="btn btn-outline-warning">
+                        <i class="fas fa-cogs me-2"></i>
+                        Genel Ayarlar
+                    </a>
+                </div>
+                
+                <hr class="border-secondary my-3">
+                
+                <h6 class="text-light mb-3">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Bot Durumu
+                </h6>
+                
+                <div class="small">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Durum:</span>
+                        <span class="badge bg-success">
+                            <i class="fas fa-circle me-1"></i>Çevrimiçi
+                        </span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Ping:</span>
+                        <span class="text-muted">~50ms</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Uptime:</span>
+                        <span class="text-muted">24d 12h 30m</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Sürüm:</span>
+                        <span class="text-muted">{{ config.version }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Activity Chart -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card bg-secondary border-0">
+            <div class="card-header bg-transparent border-bottom border-dark">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-chart-area me-2"></i>
+                    Haftalık Aktivite
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="activityChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Initialize activity chart
+    initActivityChart();
+    
+    function initActivityChart() {
+        const ctx = document.getElementById('activityChart').getContext('2d');
+        
+        // Sample data - replace with real data from API
+        const chartData = {
+            labels: ['Pazartesi', 'Salı', 'Çarşamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar'],
+            datasets: [
+                {
+                    label: 'Uyarılar',
+                    data: [12, 19, 3, 5, 2, 3, 9],
+                    borderColor: 'rgba(255, 193, 7, 1)',
+                    backgroundColor: 'rgba(255, 193, 7, 0.2)',
+                    fill: true
+                },
+                {
+                    label: 'Banlar',
+                    data: [2, 3, 20, 5, 1, 4, 6],
+                    borderColor: 'rgba(220, 53, 69, 1)',
+                    backgroundColor: 'rgba(220, 53, 69, 0.2)',
+                    fill: true
+                },
+                {
+                    label: 'Mute',
+                    data: [5, 10, 5, 8, 3, 7, 12],
+                    borderColor: 'rgba(108, 117, 125, 1)',
+                    backgroundColor: 'rgba(108, 117, 125, 0.2)',
+                    fill: true
+                }
+            ]
+        };
+        
+        new Chart(ctx, {
+            type: 'line',
+            data: chartData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#ffffff'
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        ticks: {
+                            color: '#ffffff'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    },
+                    y: {
+                        ticks: {
+                            color: '#ffffff'
+                        },
+                        grid: {
+                            color: 'rgba(255, 255, 255, 0.1)'
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+
+function refreshData() {
+    // Show loading indicator
+    const refreshBtn = event.target.closest('button');
+    const originalHtml = refreshBtn.innerHTML;
+    refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Yenileniyor...';
+    refreshBtn.disabled = true;
+    
+    // Simulate refresh (replace with actual API calls)
+    setTimeout(() => {
+        refreshBtn.innerHTML = originalHtml;
+        refreshBtn.disabled = false;
+        
+        // Show success message
+        const alert = document.createElement('div');
+        alert.className = 'alert alert-success alert-dismissible fade show';
+        alert.innerHTML = `
+            Veriler başarıyla yenilendi!
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.querySelector('.container-fluid').insertBefore(alert, document.querySelector('.row'));
+        
+        // Auto dismiss after 3 seconds
+        setTimeout(() => {
+            if (alert.parentNode) {
+                alert.remove();
+            }
+        }, 3000);
+    }, 2000);
+}
+</script>
+{% endblock %}

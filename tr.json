@@ -1,0 +1,144 @@
+{
+  "commands": {
+    "ban": {
+      "name": "ban",
+      "description": "Kullanıcıyı sunucudan yasaklar",
+      "success": "✅ {user} başarıyla yasaklandı!",
+      "reason": "Sebep: {reason}",
+      "dm_message": "🚫 {guild} sunucusundan yasaklandınız!\nSebep: {reason}"
+    },
+    "unban": {
+      "name": "unban", 
+      "description": "Kullanıcının yasağını kaldırır",
+      "success": "✅ {user} yasağı kaldırıldı!",
+      "not_banned": "❌ Bu kullanıcı yasaklı değil!"
+    },
+    "kick": {
+      "name": "kick",
+      "description": "Kullanıcıyı sunucudan atar",
+      "success": "✅ {user} başarıyla atıldı!",
+      "reason": "Sebep: {reason}",
+      "dm_message": "🚪 {guild} sunucusundan atıldınız!\nSebep: {reason}"
+    },
+    "mute": {
+      "name": "mute",
+      "description": "Kullanıcıyı susturur",
+      "success": "🔇 {user} {duration} süreliğine susturuldu!",
+      "permanent": "🔇 {user} kalıcı olarak susturuldu!",
+      "already_muted": "❌ Bu kullanıcı zaten susturulmuş!",
+      "no_mute_role": "❌ Susturma rolü ayarlanmamış! `{prefix}setmuterole @rol` kullanın."
+    },
+    "unmute": {
+      "name": "unmute",
+      "description": "Kullanıcının susturmasını kaldırır",
+      "success": "🔊 {user} susturması kaldırıldı!",
+      "not_muted": "❌ Bu kullanıcı susturulmamış!"
+    },
+    "warn": {
+      "name": "warn",
+      "description": "Kullanıcıya uyarı verir",
+      "success": "⚠️ {user} uyarıldı!\nSebep: {reason}",
+      "dm_message": "⚠️ {guild} sunucusunda uyarıldınız!\nSebep: {reason}"
+    },
+    "warnings": {
+      "name": "warnings",
+      "description": "Kullanıcının uyarılarını gösterir",
+      "title": "⚠️ {user} Uyarıları",
+      "no_warnings": "✅ Bu kullanıcının uyarısı bulunmuyor!",
+      "warning_format": "**#{id}** - {reason}\n📅 {date} | 👮 <@{moderator}>"
+    },
+    "clearwarns": {
+      "name": "clearwarns",
+      "description": "Kullanıcının uyarılarını temizler",
+      "success": "✅ {user} uyarıları temizlendi!"
+    },
+    "purge": {
+      "name": "purge",
+      "description": "Belirtilen miktarda mesaj siler",
+      "success": "🗑️ {count} mesaj silindi!",
+      "invalid_amount": "❌ Geçersiz miktar! 1-100 arası bir sayı girin."
+    },
+    "lock": {
+      "name": "lock",
+      "description": "Kanalı kilitler",
+      "success": "🔒 Kanal kilitlendi!",
+      "already_locked": "❌ Bu kanal zaten kilitli!"
+    },
+    "unlock": {
+      "name": "unlock", 
+      "description": "Kanal kilidini açar",
+      "success": "🔓 Kanal kilidi açıldı!",
+      "not_locked": "❌ Bu kanal kilitli değil!"
+    },
+    "slowmode": {
+      "name": "slowmode",
+      "description": "Yavaş mod ayarlar",
+      "success": "🐌 Yavaş mod {seconds} saniye olarak ayarlandı!",
+      "disabled": "✅ Yavaş mod kapatıldı!",
+      "invalid_time": "❌ Geçersiz süre! 0-21600 arası bir sayı girin."
+    },
+    "userinfo": {
+      "name": "userinfo",
+      "description": "Kullanıcı bilgilerini gösterir",
+      "title": "👤 Kullanıcı Bilgileri",
+      "id": "🆔 ID",
+      "joined_server": "📅 Sunucuya Katılma",
+      "joined_discord": "📅 Discord'a Katılma", 
+      "roles": "🏷️ Roller",
+      "status": "📊 Durum",
+      "nickname": "📝 Takma Ad"
+    },
+    "serverinfo": {
+      "name": "serverinfo",
+      "description": "Sunucu bilgilerini gösterir",
+      "title": "🏰 Sunucu Bilgileri",
+      "owner": "👑 Sahip",
+      "created": "📅 Oluşturulma",
+      "members": "👥 Üyeler",
+      "channels": "📺 Kanallar",
+      "roles": "🏷️ Roller",
+      "boosts": "🚀 Boost"
+    },
+    "help": {
+      "name": "help",
+      "description": "Yardım menüsünü gösterir",
+      "title": "📚 Yardım Menüsü",
+      "moderation": "🛡️ Moderasyon",
+      "utility": "🔧 Faydalı",
+      "settings": "⚙️ Ayarlar",
+      "automod": "🤖 Otomatik Moderasyon"
+    }
+  },
+  "settings": {
+    "language_set": "✅ Sunucu dili **Türkçe** olarak ayarlandı!",
+    "prefix_set": "✅ Komut öneki `{prefix}` olarak ayarlandı!",
+    "welcome_channel_set": "✅ Karşılama kanalı {channel} olarak ayarlandı!",
+    "log_channel_set": "✅ Log kanalı {channel} olarak ayarlandı!",
+    "mute_role_set": "✅ Susturma rolü {role} olarak ayarlandı!"
+  },
+  "errors": {
+    "no_permission": "Yetki Yok",
+    "missing_permissions": "Bu komutu kullanmak için gerekli yetkiye sahip değilsiniz!",
+    "bot_no_permission": "Bot Yetkisi Yok", 
+    "bot_missing_permissions": "Botun bu işlemi yapması için gerekli yetkiler yok!",
+    "member_not_found": "Üye Bulunamadı",
+    "member_not_found_desc": "Belirtilen üye bulunamadı!",
+    "cooldown": "Bekleme Süresi",
+    "cooldown_desc": "Bu komutu {:.1f} saniye sonra tekrar kullanabilirsiniz!",
+    "unknown": "Bilinmeyen Hata",
+    "invalid_user": "❌ Geçersiz kullanıcı!",
+    "cannot_action_self": "❌ Bu işlemi kendinize yapamazsınız!",
+    "cannot_action_owner": "❌ Sunucu sahibine bu işlemi yapamazsınız!",
+    "hierarchy_error": "❌ Bu kullanıcıya işlem yapmak için yetkisizsiniz!"
+  },
+  "automod": {
+    "spam_detected": "🚫 Spam tespit edildi!",
+    "flood_detected": "🚫 Mesaj akımı tespit edildi!",
+    "link_detected": "🚫 Link tespit edildi!",
+    "invite_detected": "🚫 Davet linki tespit edildi!",
+    "caps_detected": "🚫 Aşırı büyük harf kullanımı tespit edildi!",
+    "emoji_spam_detected": "🚫 Emoji spamı tespit edildi!",
+    "mention_spam_detected": "🚫 Etiket spamı tespit edildi!",
+    "blacklisted_word_detected": "🚫 Yasaklı kelime tespit edildi!"
+  }
+}

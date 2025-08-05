@@ -1,0 +1,381 @@
+
+{% extends "base.html" %}
+
+{% block title %}Ayarlar - {{ config.title }}{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="text-light mb-1">
+            <i class="fas fa-cogs me-2"></i>
+            <span data-translate="dashboard_settings">Dashboard Ayarları</span>
+        </h2>
+        <p class="text-muted mb-0" data-translate="settings_description">Dashboard tercihlerinizi ve genel ayarları yönetin</p>
+    </div>
+</div>
+
+<!-- Alert Messages -->
+<div id="settings-alert" class="alert alert-success alert-dismissible fade" role="alert" style="display: none;">
+    <span id="alert-message"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+
+<!-- Settings Tabs -->
+<div class="row">
+    <div class="col-12">
+        <div class="card bg-secondary border-secondary">
+            <div class="card-header bg-dark border-secondary">
+                <ul class="nav nav-tabs card-header-tabs" id="settingsTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active bg-dark text-light border-secondary" id="general-tab" 
+                                data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab">
+                            <i class="fas fa-cog me-2"></i>
+                            <span data-translate="general_settings">Genel Ayarlar</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link bg-dark text-light border-secondary" id="notifications-tab" 
+                                data-bs-toggle="tab" data-bs-target="#notifications" type="button" role="tab">
+                            <i class="fas fa-bell me-2"></i>
+                            <span data-translate="notification_settings">Bildirim Ayarları</span>
+                        </button>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="card-body">
+                <div class="tab-content" id="settingsTabContent">
+                    <!-- General Settings -->
+                    <div class="tab-pane fade show active" id="general" role="tabpanel">
+                        <form id="generalSettingsForm">
+                            <div class="row g-4">
+                                <div class="col-12">
+                                    <h5 class="text-light mb-3">
+                                        <i class="fas fa-palette me-2"></i>
+                                        <span data-translate="appearance_settings">Görünüm Ayarları</span>
+                                    </h5>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label class="form-label text-light" data-translate="theme">Tema</label>
+                                    <select class="form-select bg-dark border-secondary text-light" name="theme" id="theme">
+                                        <option value="dark" data-translate="dark_theme">Koyu Tema</option>
+                                        <option value="light" data-translate="light_theme">Açık Tema</option>
+                                        <option value="auto" data-translate="auto_theme">Otomatik</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label class="form-label text-light" data-translate="language">Dil</label>
+                                    <select class="form-select bg-dark border-secondary text-light" name="language" id="language">
+                                        <option value="tr">🇹🇷 Türkçe</option>
+                                        <option value="en">🇺🇸 English</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label class="form-label text-light" data-translate="timezone">Zaman Dilimi</label>
+                                    <select class="form-select bg-dark border-secondary text-light" name="timezone" id="timezone">
+                                        <option value="Europe/Istanbul">🇹🇷 İstanbul (UTC+3)</option>
+                                        <option value="America/New_York">🇺🇸 New York (UTC-5)</option>
+                                        <option value="Europe/London">🇬🇧 Londra (UTC+0)</option>
+                                        <option value="Asia/Tokyo">🇯🇵 Tokyo (UTC+9)</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label class="form-label text-light" data-translate="date_format">Tarih Formatı</label>
+                                    <select class="form-select bg-dark border-secondary text-light" name="date_format" id="date_format">
+                                        <option value="dd.mm.yyyy">DD.MM.YYYY</option>
+                                        <option value="mm/dd/yyyy">MM/DD/YYYY</option>
+                                        <option value="yyyy-mm-dd">YYYY-MM-DD</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <hr class="border-secondary">
+                                    <h5 class="text-light mb-3">
+                                        <i class="fas fa-sliders-h me-2"></i>
+                                        <span data-translate="performance_settings">Performans Ayarları</span>
+                                    </h5>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label class="form-label text-light" data-translate="auto_refresh">Otomatik Yenileme (saniye)</label>
+                                    <select class="form-select bg-dark border-secondary text-light" name="auto_refresh" id="auto_refresh">
+                                        <option value="10">10 saniye</option>
+                                        <option value="30" selected>30 saniye</option>
+                                        <option value="60">1 dakika</option>
+                                        <option value="300">5 dakika</option>
+                                        <option value="0">Kapalı</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label class="form-label text-light" data-translate="items_per_page">Sayfa Başına Öğe</label>
+                                    <select class="form-select bg-dark border-secondary text-light" name="items_per_page" id="items_per_page">
+                                        <option value="10">10</option>
+                                        <option value="25" selected>25</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="show_animations" name="show_animations" checked>
+                                        <label class="form-check-label text-light" for="show_animations" data-translate="show_animations">
+                                            Animasyonları Göster
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="compact_mode" name="compact_mode">
+                                        <label class="form-check-label text-light" for="compact_mode" data-translate="compact_mode">
+                                            Kompakt Mod
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-primary me-2">
+                                        <i class="fas fa-save me-2"></i>
+                                        <span data-translate="save_settings">Ayarları Kaydet</span>
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" onclick="resetSettings()">
+                                        <i class="fas fa-undo me-2"></i>
+                                        <span data-translate="reset_settings">Sıfırla</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <!-- Notification Settings -->
+                    <div class="tab-pane fade" id="notifications" role="tabpanel">
+                        <form id="notificationSettingsForm">
+                            <div class="row g-4">
+                                <div class="col-12">
+                                    <h5 class="text-light mb-3">
+                                        <i class="fas fa-bell me-2"></i>
+                                        <span data-translate="notification_preferences">Bildirim Tercihleri</span>
+                                    </h5>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" type="checkbox" id="notify_new_warnings" name="notify_new_warnings">
+                                        <label class="form-check-label text-light" for="notify_new_warnings">
+                                            <span data-translate="notify_warnings">Yeni uyarılar için bildirim</span>
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" type="checkbox" id="notify_new_bans" name="notify_new_bans">
+                                        <label class="form-check-label text-light" for="notify_new_bans">
+                                            <span data-translate="notify_bans">Yeni banlar için bildirim</span>
+                                        </label>
+                                    </div>
+                                    
+                                    <div class="form-check form-switch mb-3">
+                                        <input class="form-check-input" type="checkbox" id="notify_bot_offline" name="notify_bot_offline">
+                                        <label class="form-check-label text-light" for="notify_bot_offline">
+                                            <span data-translate="notify_bot_offline">Bot çevrimdışı bildirimi</span>
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-primary me-2">
+                                        <i class="fas fa-save me-2"></i>
+                                        <span data-translate="save_settings">Ayarları Kaydet</span>
+                                    </button>
+                                    <button type="button" class="btn btn-info" onclick="testNotification()">
+                                        <i class="fas fa-bell me-2"></i>
+                                        <span data-translate="test_notification">Test Bildirimi</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Load current settings on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadCurrentSettings();
+});
+
+// Load current settings from server
+async function loadCurrentSettings() {
+    try {
+        const response = await fetch('/api/settings/general');
+        const settings = await response.json();
+        
+        if (settings) {
+            // Populate form fields
+            document.getElementById('theme').value = settings.theme || 'dark';
+            document.getElementById('language').value = settings.language || 'tr';
+            document.getElementById('timezone').value = settings.timezone || 'Europe/Istanbul';
+            document.getElementById('date_format').value = settings.date_format || 'dd.mm.yyyy';
+            document.getElementById('auto_refresh').value = settings.auto_refresh || 30;
+            document.getElementById('items_per_page').value = settings.items_per_page || 25;
+            document.getElementById('show_animations').checked = settings.show_animations !== false;
+            document.getElementById('compact_mode').checked = settings.compact_mode === true;
+        }
+    } catch (error) {
+        console.error('Settings yüklenirken hata:', error);
+    }
+}
+
+// Handle general settings form submission
+document.getElementById('generalSettingsForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const settings = {
+        theme: formData.get('theme'),
+        language: formData.get('language'),
+        timezone: formData.get('timezone'),
+        date_format: formData.get('date_format'),
+        auto_refresh: parseInt(formData.get('auto_refresh')),
+        items_per_page: parseInt(formData.get('items_per_page')),
+        show_animations: formData.get('show_animations') === 'on',
+        compact_mode: formData.get('compact_mode') === 'on'
+    };
+    
+    try {
+        const response = await fetch('/api/settings/general', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(settings)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showAlert('success', result.message || 'Ayarlar başarıyla kaydedildi!');
+            
+            // Apply language change immediately if changed
+            if (settings.language && window.languageManager) {
+                window.languageManager.changeLanguage(settings.language);
+            }
+            
+            // Apply theme change immediately if changed
+            if (settings.theme) {
+                applyTheme(settings.theme);
+            }
+        } else {
+            showAlert('danger', result.error || 'Ayarlar kaydedilirken hata oluştu!');
+        }
+    } catch (error) {
+        console.error('Ayarlar kaydedilirken hata:', error);
+        showAlert('danger', 'Ayarlar kaydedilirken hata oluştu!');
+    }
+});
+
+// Handle notification settings form submission
+document.getElementById('notificationSettingsForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const settings = {
+        notify_new_warnings: formData.get('notify_new_warnings') === 'on',
+        notify_new_bans: formData.get('notify_new_bans') === 'on',
+        notify_bot_offline: formData.get('notify_bot_offline') === 'on'
+    };
+    
+    try {
+        const response = await fetch('/api/settings/notifications', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(settings)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showAlert('success', result.message || 'Bildirim ayarları kaydedildi!');
+        } else {
+            showAlert('danger', result.error || 'Bildirim ayarları kaydedilirken hata oluştu!');
+        }
+    } catch (error) {
+        console.error('Bildirim ayarları kaydedilirken hata:', error);
+        showAlert('danger', 'Bildirim ayarları kaydedilirken hata oluştu!');
+    }
+});
+
+// Show alert message
+function showAlert(type, message) {
+    const alertDiv = document.getElementById('settings-alert');
+    const messageSpan = document.getElementById('alert-message');
+    
+    alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+    messageSpan.textContent = message;
+    alertDiv.style.display = 'block';
+    
+    // Auto hide after 5 seconds
+    setTimeout(() => {
+        alertDiv.classList.remove('show');
+        setTimeout(() => {
+            alertDiv.style.display = 'none';
+        }, 150);
+    }, 5000);
+}
+
+// Reset settings to defaults
+function resetSettings() {
+    if (confirm('Tüm ayarları varsayılan değerlere sıfırlamak istiyor musunuz?')) {
+        document.getElementById('theme').value = 'dark';
+        document.getElementById('language').value = 'tr';
+        document.getElementById('timezone').value = 'Europe/Istanbul';
+        document.getElementById('date_format').value = 'dd.mm.yyyy';
+        document.getElementById('auto_refresh').value = 30;
+        document.getElementById('items_per_page').value = 25;
+        document.getElementById('show_animations').checked = true;
+        document.getElementById('compact_mode').checked = false;
+        
+        showAlert('info', 'Ayarlar varsayılan değerlere sıfırlandı. Kaydetmeyi unutmayın!');
+    }
+}
+
+// Test notification
+async function testNotification() {
+    try {
+        const response = await fetch('/api/settings/test-notification', {
+            method: 'POST'
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showAlert('success', result.message);
+        } else {
+            showAlert('danger', result.error || 'Test bildirimi gönderilemedi!');
+        }
+    } catch (error) {
+        console.error('Test bildirimi gönderilirken hata:', error);
+        showAlert('danger', 'Test bildirimi gönderilirken hata oluştu!');
+    }
+}
+
+// Apply theme changes
+function applyTheme(theme) {
+    // This would apply theme changes to the UI
+    // Implementation depends on your CSS structure
+    console.log('Tema uygulandı:', theme);
+}
+</script>
+
+{% endblock %}

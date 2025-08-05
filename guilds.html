@@ -1,0 +1,517 @@
+{% extends "base.html" %}
+
+{% block title %}Sunucular - {{ config.title }}{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="text-light mb-1">
+                    <i class="fas fa-server me-2"></i>
+                    Sunucular
+                </h2>
+                <p class="text-muted mb-0">Botun ekli olduğu tüm sunucuları yönetin</p>
+            </div>
+            <div>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addGuildModal">
+                    <i class="fas fa-plus me-2"></i>
+                    Sunucu Ekle
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card bg-secondary border-0">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label text-light">Arama</label>
+                        <input type="text" class="form-control bg-dark border-secondary text-light" 
+                               placeholder="Sunucu ID ara..." id="searchInput">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label text-light">Dil</label>
+                        <select class="form-select bg-dark border-secondary text-light" id="languageFilter">
+                            <option value="">Tüm diller</option>
+                            <option value="tr">Türkçe</option>
+                            <option value="en">İngilizce</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label text-light">Sıralama</label>
+                        <select class="form-select bg-dark border-secondary text-light" id="sortFilter">
+                            <option value="guild_id">Sunucu ID</option>
+                            <option value="warnings">Uyarı Sayısı</option>
+                            <option value="bans">Ban Sayısı</option>
+                            <option value="mutes">Mute Sayısı</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label text-light">&nbsp;</label>
+                        <button class="btn btn-outline-primary w-100" onclick="applyFilters()">
+                            <i class="fas fa-filter me-2"></i>
+                            Filtrele
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Servers Grid -->
+<div class="row" id="guildsContainer">
+    {% for guild in guilds %}
+    <div class="col-lg-6 col-xl-4 mb-4 guild-card" 
+         data-guild-id="{{ guild.guild_id }}" 
+         data-language="{{ guild.language }}"
+         data-warnings="{{ guild.warning_count }}"
+         data-bans="{{ guild.ban_count }}"
+         data-mutes="{{ guild.mute_count }}">
+        <div class="card bg-secondary border-0 h-100">
+            <div class="card-header bg-transparent border-bottom border-dark">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-server me-2"></i>
+                        Sunucu {{ guild.guild_id }}
+                    </h6>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-light" type="button" 
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-dark">
+                            <li>
+                                <a class="dropdown-item" href="{{ url_for('guild_detail', guild_id=guild.guild_id) }}">
+                                    <i class="fas fa-eye me-2"></i>Detayları Görüntüle
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" href="#" onclick="openSettingsModal({{ guild.guild_id }})">
+                                    <i class="fas fa-cogs me-2"></i>Ayarları Düzenle
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="#" 
+                                   onclick="confirmRemoveGuild({{ guild.guild_id }})">
+                                    <i class="fas fa-trash me-2"></i>Sunucudan Çık
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- Guild Info -->
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <small class="text-muted">Dil:</small>
+                        <div>
+                            <span class="badge bg-primary">
+                                <i class="fas fa-language me-1"></i>
+                                {{ guild.language|upper }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <small class="text-muted">Prefix:</small>
+                        <div>
+                            <code class="text-info">{{ guild.prefix }}</code>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statistics -->
+                <div class="row g-2 mb-3">
+                    <div class="col-4 text-center">
+                        <div class="bg-dark rounded p-2">
+                            <div class="text-warning fw-bold">{{ guild.warning_count }}</div>
+                            <small class="text-muted">Uyarı</small>
+                        </div>
+                    </div>
+                    <div class="col-4 text-center">
+                        <div class="bg-dark rounded p-2">
+                            <div class="text-danger fw-bold">{{ guild.ban_count }}</div>
+                            <small class="text-muted">Ban</small>
+                        </div>
+                    </div>
+                    <div class="col-4 text-center">
+                        <div class="bg-dark rounded p-2">
+                            <div class="text-secondary fw-bold">{{ guild.mute_count }}</div>
+                            <small class="text-muted">Mute</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Info -->
+                <div class="small text-muted mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span>Log Kanalı:</span>
+                        <span>{{ guild.log_channel if guild.log_channel else 'Ayarlanmamış' }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Mute Rolü:</span>
+                        <span>{{ guild.mute_role if guild.mute_role else 'Ayarlanmamış' }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Otomatik Mod:</span>
+                        <span>
+                            {% if guild.automod_enabled %}
+                                <i class="fas fa-check text-success"></i>
+                            {% else %}
+                                <i class="fas fa-times text-danger"></i>
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-grid gap-2">
+                    <a href="{{ url_for('guild_detail', guild_id=guild.guild_id) }}" 
+                       class="btn btn-primary btn-sm">
+                        <i class="fas fa-eye me-2"></i>
+                        Detayları Görüntüle
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Empty State -->
+{% if not guilds %}
+<div class="row">
+    <div class="col-12">
+        <div class="text-center py-5">
+            <div class="text-muted mb-4">
+                <i class="fas fa-server fa-5x opacity-25"></i>
+            </div>
+            <h4 class="text-light mb-3">Henüz sunucu bulunmuyor</h4>
+            <p class="text-muted mb-4">
+                Botu Discord sunucunuza davet ederek başlayın.
+            </p>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addGuildModal">
+                <i class="fas fa-plus me-2"></i>
+                İlk Sunucunu Ekle
+            </button>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Add Guild Modal -->
+<div class="modal fade" id="addGuildModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title text-light">
+                    <i class="fas fa-plus me-2"></i>
+                    Sunucu Ekle
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Botu sunucunuza davet etmek için aşağıdaki adımları izleyin:
+                </div>
+
+                <ol class="text-light">
+                    <li class="mb-2">
+                        Aşağıdaki davet linkine tıklayın
+                    </li>
+                    <li class="mb-2">
+                        Botu eklemek istediğiniz sunucuyu seçin
+                    </li>
+                    <li class="mb-2">
+                        Gerekli izinleri verin
+                    </li>
+                    <li class="mb-2">
+                        Bot otomatik olarak sunucunuzda aktif olacak
+                    </li>
+                </ol>
+
+                <div class="text-center mt-4">
+                    <a href="{{ config.invite_url }}" class="btn btn-primary btn-lg" target="_blank">
+                        <i class="fab fa-discord me-2"></i>
+                        Botu Davet Et
+                    </a>
+                </div>
+
+                <div class="mt-4">
+                    <h6 class="text-light">Gerekli İzinler:</h6>
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <small class="text-muted">
+                                <i class="fas fa-check text-success me-1"></i>
+                                Mesajları Oku
+                            </small>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">
+                                <i class="fas fa-check text-success me-1"></i>
+                                Mesaj Gönder
+                            </small>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">
+                                <i class="fas fa-check text-success me-1"></i>
+                                Üyeleri Yönet
+                            </small>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">
+                                <i class="fas fa-check text-success me-1"></i>
+                                Rolleri Yönet
+                            </small>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">
+                                <i class="fas fa-check text-success me-1"></i>
+                                Kanalları Yönet
+                            </small>
+                        </div>
+                        <div class="col-6">
+                            <small class="text-muted">
+                                <i class="fas fa-check text-success me-1"></i>
+                                Mesajları Sil
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal fade" id="settingsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content bg-dark border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title text-light">
+                    <i class="fas fa-cogs me-2"></i>
+                    Sunucu Ayarları
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="settingsForm">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-light">Dil</label>
+                            <select class="form-select bg-dark border-secondary text-light" name="language">
+                                <option value="tr">Türkçe</option>
+                                <option value="en">İngilizce</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-light">Prefix</label>
+                            <input type="text" class="form-control bg-dark border-secondary text-light" 
+                                   name="prefix" placeholder="!" maxlength="3">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-light">Log Kanalı ID</label>
+                            <input type="text" class="form-control bg-dark border-secondary text-light" 
+                                   name="log_channel" placeholder="123456789012345678">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-light">Mute Rolü ID</label>
+                            <input type="text" class="form-control bg-dark border-secondary text-light" 
+                                   name="mute_role" placeholder="123456789012345678">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-light">Hoşgeldin Kanalı ID</label>
+                            <input type="text" class="form-control bg-dark border-secondary text-light" 
+                                   name="welcome_channel" placeholder="123456789012345678">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-light">Veda Kanalı ID</label>
+                            <input type="text" class="form-control bg-dark border-secondary text-light" 
+                                   name="goodbye_channel" placeholder="123456789012345678">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label text-light">Hoşgeldin Mesajı</label>
+                            <textarea class="form-control bg-dark border-secondary text-light" 
+                                      name="welcome_message" rows="3" 
+                                      placeholder="Hoşgeldin {user}! Sunucumuza katıldığın için teşekkürler."></textarea>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label text-light">Veda Mesajı</label>
+                            <textarea class="form-control bg-dark border-secondary text-light" 
+                                      name="goodbye_message" rows="3" 
+                                      placeholder="{user} sunucumuzdan ayrıldı. Güle güle!"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-light">Maksimum Uyarı Sayısı</label>
+                            <input type="number" class="form-control bg-dark border-secondary text-light" 
+                                   name="max_warnings" min="1" max="10" value="3">
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check form-switch mt-4">
+                                <input class="form-check-input" type="checkbox" name="automod_enabled" checked>
+                                <label class="form-check-label text-light">
+                                    Otomatik Moderasyon
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-primary" onclick="saveSettings()">
+                    <i class="fas fa-save me-2"></i>
+                    Kaydet
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentGuildId = null;
+
+function applyFilters() {
+    const search = document.getElementById('searchInput').value.toLowerCase();
+    const language = document.getElementById('languageFilter').value;
+    const sort = document.getElementById('sortFilter').value;
+    const cards = document.querySelectorAll('.guild-card');
+
+    // Filter cards
+    cards.forEach(card => {
+        const guildId = card.dataset.guildId.toLowerCase();
+        const cardLanguage = card.dataset.language;
+
+        let show = true;
+
+        if (search && !guildId.includes(search)) {
+            show = false;
+        }
+
+        if (language && cardLanguage !== language) {
+            show = false;
+        }
+
+        card.style.display = show ? 'block' : 'none';
+    });
+
+    // Sort cards
+    const container = document.getElementById('guildsContainer');
+    const cardArray = Array.from(cards).filter(card => card.style.display !== 'none');
+
+    cardArray.sort((a, b) => {
+        const aValue = parseInt(a.dataset[sort.replace('_', '')]) || 0;
+        const bValue = parseInt(b.dataset[sort.replace('_', '')]) || 0;
+        return bValue - aValue; // Descending order
+    });
+
+    // Re-append sorted cards
+    cardArray.forEach(card => container.appendChild(card));
+}
+
+function openSettingsModal(guildId) {
+    currentGuildId = guildId;
+
+    // Load current settings
+    fetch(`/api/guild/${guildId}/settings`)
+        .then(response => response.json())
+        .then(data => {
+            const form = document.getElementById('settingsForm');
+
+            // Populate form fields
+            form.elements.language.value = data.language || 'tr';
+            form.elements.prefix.value = data.prefix || '!';
+            form.elements.log_channel.value = data.log_channel || '';
+            form.elements.mute_role.value = data.mute_role || '';
+            form.elements.welcome_channel.value = data.welcome_channel || '';
+            form.elements.goodbye_channel.value = data.goodbye_channel || '';
+            form.elements.welcome_message.value = data.welcome_message || '';
+            form.elements.goodbye_message.value = data.goodbye_message || '';
+            form.elements.max_warnings.value = data.max_warnings || 3;
+            form.elements.automod_enabled.checked = data.automod_enabled == 1;
+
+            // Show modal
+            new bootstrap.Modal(document.getElementById('settingsModal')).show();
+        })
+        .catch(error => {
+            console.error('Settings yüklenemedi:', error);
+            alert('Ayarlar yüklenirken hata oluştu!');
+        });
+}
+
+function saveSettings() {
+    if (!currentGuildId) return;
+
+    const form = document.getElementById('settingsForm');
+    const formData = new FormData(form);
+    const data = {};
+
+    // Convert form data to object
+    for (let [key, value] of formData.entries()) {
+        data[key] = value;
+    }
+
+    // Handle checkbox
+    data.automod_enabled = form.elements.automod_enabled.checked ? 1 : 0;
+
+    // Save settings
+    fetch(`/api/guild/${currentGuildId}/settings`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            // Close modal
+            bootstrap.Modal.getInstance(document.getElementById('settingsModal')).hide();
+
+            // Show success message
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-success alert-dismissible fade show';
+            alert.innerHTML = `
+                Ayarlar başarıyla kaydedildi!
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.querySelector('.container-fluid').insertBefore(alert, document.querySelector('.row'));
+
+            // Refresh page after a short delay
+            setTimeout(() => {
+                location.reload();
+            }, 2000);
+        } else {
+            alert('Ayarlar kaydedilirken hata oluştu!');
+        }
+    })
+    .catch(error => {
+        console.error('Ayarlar kaydedilemedi:', error);
+        alert('Ayarlar kaydedilirken hata oluştu!');
+    });
+}
+
+function confirmRemoveGuild(guildId) {
+    if (confirm('Bu sunucudan çıkmak istediğinizden emin misiniz? Tüm veriler silinecek!')) {
+        // Implement guild removal logic
+        alert('Bu özellik henüz implementasyonda. Bot manual olarak sunucudan çıkarılmalı.');
+    }
+}
+
+// Search on type
+document.getElementById('searchInput').addEventListener('input', applyFilters);
+document.getElementById('languageFilter').addEventListener('change', applyFilters);
+document.getElementById('sortFilter').addEventListener('change', applyFilters);
+</script>
+{% endblock %}

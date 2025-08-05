@@ -1,0 +1,412 @@
+{% extends "base.html" %}
+
+{% block title %}Sunucu {{ guild.guild_id }} - {{ config.title }}{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="{{ url_for('guilds') }}" class="text-decoration-none">Sunucular</a>
+                        </li>
+                        <li class="breadcrumb-item active text-light">Sunucu {{ guild.guild_id }}</li>
+                    </ol>
+                </nav>
+                <h2 class="text-light mb-1">
+                    <i class="fas fa-server me-2"></i>
+                    Sunucu Detayları
+                </h2>
+                <p class="text-muted mb-0">ID: {{ guild.guild_id }}</p>
+            </div>
+            <div>
+                <button class="btn btn-outline-primary me-2" onclick="openSettingsModal()">
+                    <i class="fas fa-cogs me-2"></i>
+                    Ayarları Düzenle
+                </button>
+                <button class="btn btn-primary" onclick="refreshData()">
+                    <i class="fas fa-sync-alt me-2"></i>
+                    Yenile
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Server Stats -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-warning border-0">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-dark mb-1">Toplam Uyarı</h6>
+                        <h3 class="mb-0 text-dark">{{ stats.warnings }}</h3>
+                    </div>
+                    <div class="text-dark opacity-75">
+                        <i class="fas fa-exclamation-triangle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-danger border-0">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-white-50 mb-1">Toplam Ban</h6>
+                        <h3 class="mb-0 text-white">{{ stats.bans }}</h3>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="fas fa-ban fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-secondary border-0">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-white-50 mb-1">Toplam Mute</h6>
+                        <h3 class="mb-0 text-white">{{ stats.mutes }}</h3>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="fas fa-volume-mute fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-info border-0">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-dark mb-1">Mod Logları</h6>
+                        <h3 class="mb-0 text-dark">{{ stats.logs }}</h3>
+                    </div>
+                    <div class="text-dark opacity-75">
+                        <i class="fas fa-clipboard-list fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="row">
+    <!-- Server Settings -->
+    <div class="col-lg-4 mb-4">
+        <div class="card bg-secondary border-0">
+            <div class="card-header bg-transparent border-bottom border-dark">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-cogs me-2"></i>
+                    Sunucu Ayarları
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-dark table-sm">
+                        <tbody>
+                            <tr>
+                                <td><strong>Dil:</strong></td>
+                                <td>
+                                    <span class="badge bg-primary">
+                                        <i class="fas fa-language me-1"></i>
+                                        {{ guild.language|upper }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Prefix:</strong></td>
+                                <td><code class="text-info">{{ guild.prefix }}</code></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Log Kanalı:</strong></td>
+                                <td>
+                                    {% if guild.log_channel %}
+                                        <code>{{ guild.log_channel }}</code>
+                                    {% else %}
+                                        <span class="text-muted">Ayarlanmamış</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Mute Rolü:</strong></td>
+                                <td>
+                                    {% if guild.mute_role %}
+                                        <code>{{ guild.mute_role }}</code>
+                                    {% else %}
+                                        <span class="text-muted">Ayarlanmamış</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Hoşgeldin Kanalı:</strong></td>
+                                <td>
+                                    {% if guild.welcome_channel %}
+                                        <code>{{ guild.welcome_channel }}</code>
+                                    {% else %}
+                                        <span class="text-muted">Ayarlanmamış</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Veda Kanalı:</strong></td>
+                                <td>
+                                    {% if guild.goodbye_channel %}
+                                        <code>{{ guild.goodbye_channel }}</code>
+                                    {% else %}
+                                        <span class="text-muted">Ayarlanmamış</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td><strong>Maks. Uyarı:</strong></td>
+                                <td><span class="badge bg-warning text-dark">{{ guild.max_warnings }}</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong>Otomatik Mod:</strong></td>
+                                <td>
+                                    {% if guild.automod_enabled %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check me-1"></i>Aktif
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-times me-1"></i>Pasif
+                                        </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="d-grid gap-2 mt-3">
+                    <button class="btn btn-outline-primary" onclick="openSettingsModal()">
+                        <i class="fas fa-edit me-2"></i>
+                        Ayarları Düzenle
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Welcome/Goodbye Messages -->
+        <div class="card bg-secondary border-0 mt-4">
+            <div class="card-header bg-transparent border-bottom border-dark">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-comment-alt me-2"></i>
+                    Mesaj Şablonları
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6 class="text-light">Hoşgeldin Mesajı:</h6>
+                    {% if guild.welcome_message %}
+                        <div class="bg-dark p-2 rounded small">
+                            {{ guild.welcome_message }}
+                        </div>
+                    {% else %}
+                        <p class="text-muted small">Ayarlanmamış</p>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <h6 class="text-light">Veda Mesajı:</h6>
+                    {% if guild.goodbye_message %}
+                        <div class="bg-dark p-2 rounded small">
+                            {{ guild.goodbye_message }}
+                        </div>
+                    {% else %}
+                        <p class="text-muted small">Ayarlanmamış</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Activity -->
+    <div class="col-lg-8">
+        <div class="card bg-secondary border-0 mb-4">
+            <div class="card-header bg-transparent border-bottom border-dark">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-history me-2"></i>
+                        Son Aktiviteler
+                    </h5>
+                    <div>
+                        <select class="form-select form-select-sm bg-dark border-secondary text-light" 
+                                id="activityFilter" onchange="filterActivity()">
+                            <option value="">Tüm aktiviteler</option>
+                            <option value="warn">Uyarılar</option>
+                            <option value="ban">Banlar</option>
+                            <option value="kick">Kick</option>
+                            <option value="mute">Mute</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if recent_activity %}
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Aksiyon</th>
+                                    <th>Hedef</th>
+                                    <th>Moderatör</th>
+                                    <th>Tarih</th>
+                                    <th>Sebep</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for activity in recent_activity %}
+                                <tr class="activity-row" data-action="{{ activity.action }}">
+                                    <td>
+                                        {% if activity.action == 'ban' %}
+                                            <span class="badge bg-danger">
+                                                <i class="fas fa-ban me-1"></i>Ban
+                                            </span>
+                                        {% elif activity.action == 'kick' %}
+                                            <span class="badge bg-warning">
+                                                <i class="fas fa-door-open me-1"></i>Kick
+                                            </span>
+                                        {% elif activity.action == 'mute' %}
+                                            <span class="badge bg-secondary">
+                                                <i class="fas fa-volume-mute me-1"></i>Mute
+                                            </span>
+                                        {% elif activity.action == 'warn' %}
+                                            <span class="badge bg-info">
+                                                <i class="fas fa-exclamation-triangle me-1"></i>Warn
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-primary">{{ activity.action }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><code>{{ activity.target_id }}</code></td>
+                                    <td><code>{{ activity.moderator_id }}</code></td>
+                                    <td>
+                                        <small class="text-muted">
+                                            {{ activity.timestamp.strftime('%d.%m.%Y %H:%M') if activity.timestamp else 'N/A' }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <span class="text-truncate d-inline-block" style="max-width: 200px;" 
+                                              title="{{ activity.reason }}">
+                                            {{ activity.reason[:50] }}{% if activity.reason|length > 50 %}...{% endif %}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-history fa-3x mb-3 opacity-50"></i>
+                        <p>Henüz aktivite bulunmuyor.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Warnings List -->
+        <div class="card bg-secondary border-0">
+            <div class="card-header bg-transparent border-bottom border-dark">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Son Uyarılar
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if warnings %}
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Kullanıcı</th>
+                                    <th>Moderatör</th>
+                                    <th>Sebep</th>
+                                    <th>Tarih</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for warning in warnings %}
+                                <tr>
+                                    <td><code>{{ warning.user_id }}</code></td>
+                                    <td><code>{{ warning.moderator_id }}</code></td>
+                                    <td>
+                                        <span class="text-truncate d-inline-block" style="max-width: 250px;" 
+                                              title="{{ warning.reason }}">
+                                            {{ warning.reason[:60] }}{% if warning.reason|length > 60 %}...{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            {{ warning.timestamp.strftime('%d.%m.%Y %H:%M') if warning.timestamp else 'N/A' }}
+                                        </small>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-exclamation-triangle fa-3x mb-3 opacity-50"></i>
+                        <p>Henüz uyarı bulunmuyor.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function filterActivity() {
+    const filter = document.getElementById('activityFilter').value;
+    const rows = document.querySelectorAll('.activity-row');
+    
+    rows.forEach(row => {
+        if (!filter || row.dataset.action === filter) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+function openSettingsModal() {
+    // This would open the same settings modal as in guilds.html
+    // Implementation would be similar to guilds.html
+    alert('Ayarlar modalı açılacak - guilds.html\'deki modalın aynısı kullanılabilir');
+}
+
+function refreshData() {
+    const refreshBtn = event.target.closest('button');
+    const originalHtml = refreshBtn.innerHTML;
+    refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Yenileniyor...';
+    refreshBtn.disabled = true;
+    
+    // Simulate refresh
+    setTimeout(() => {
+        refreshBtn.innerHTML = originalHtml;
+        refreshBtn.disabled = false;
+        location.reload();
+    }, 2000);
+}
+</script>
+{% endblock %}

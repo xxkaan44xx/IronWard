@@ -1,0 +1,887 @@
+{% extends "base.html" %}
+
+{% block title %}Canlı İzleme - {{ config.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.live-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    background: #22c55e;
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+    margin-right: 8px;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.2); opacity: 0.7; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.monitoring-card {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+}
+
+.monitoring-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255,255,255,0.2);
+}
+
+.threat-level-low { border-left: 4px solid #22c55e; }
+.threat-level-medium { border-left: 4px solid #f59e0b; }
+.threat-level-high { border-left: 4px solid #ef4444; }
+
+.real-time-data {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+}
+
+.activity-stream {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 15px;
+    background: rgba(0,0,0,0.2);
+}
+
+.activity-item {
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    border-radius: 6px;
+    background: rgba(255,255,255,0.05);
+    border-left: 3px solid #667eea;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.activity-item:hover {
+    background: rgba(255,255,255,0.1);
+}
+
+.activity-new {
+    animation: slideInRight 0.5s ease;
+    border-left-color: #22c55e;
+}
+
+@keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+}
+
+.metric-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #667eea;
+}
+
+.metric-change {
+    font-size: 0.8rem;
+    margin-top: 4px;
+}
+
+.metric-up { color: #22c55e; }
+.metric-down { color: #ef4444; }
+.metric-stable { color: #6b7280; }
+
+.server-status {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.server-item {
+    background: rgba(255,255,255,0.05);
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.server-item:hover {
+    background: rgba(255,255,255,0.1);
+    transform: scale(1.02);
+}
+
+.server-online { border: 2px solid #22c55e; }
+.server-warning { border: 2px solid #f59e0b; }
+.server-offline { border: 2px solid #ef4444; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Live Monitoring Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card bg-gradient-primary border-0 text-white">
+            <div class="card-body">
+                <h2 class="mb-2">
+                    <span class="live-indicator"></span>
+                    Canlı İzleme Merkezi
+                </h2>
+                <p class="mb-0">
+                    Gerçek zamanlı bot performansı ve sunucu aktivitesi izleme sistemi
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Live Metrics Row -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="monitoring-card threat-level-low">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="metric-value" id="live-commands">1,247</div>
+                    <div class="small text-muted">Komutlar (Son 1h)</div>
+                    <div class="metric-change metric-up">
+                        <i class="fas fa-arrow-up"></i> +15%
+                    </div>
+                </div>
+                <div class="text-success">
+                    <i class="fas fa-terminal fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="monitoring-card threat-level-low">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="metric-value" id="live-response-time">25ms</div>
+                    <div class="small text-muted">Ortalama Yanıt</div>
+                    <div class="metric-change metric-stable">
+                        <i class="fas fa-minus"></i> Stabil
+                    </div>
+                </div>
+                <div class="text-info">
+                    <i class="fas fa-clock fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="monitoring-card threat-level-medium">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="metric-value" id="live-threats">3</div>
+                    <div class="small text-muted">Aktif Tehditler</div>
+                    <div class="metric-change metric-down">
+                        <i class="fas fa-arrow-down"></i> -2
+                    </div>
+                </div>
+                <div class="text-warning">
+                    <i class="fas fa-shield-alt fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="monitoring-card threat-level-low">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="metric-value" id="live-uptime">99.98%</div>
+                    <div class="small text-muted">Uptime (30 gün)</div>
+                    <div class="metric-change metric-up">
+                        <i class="fas fa-arrow-up"></i> +0.02%
+                    </div>
+                </div>
+                <div class="text-success">
+                    <i class="fas fa-heartbeat fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Live Activity and Charts -->
+<div class="row">
+    <!-- Real-time Activity Stream -->
+    <div class="col-lg-6 mb-4">
+        <div class="monitoring-card">
+            <h5 class="text-light mb-3">
+                <span class="live-indicator"></span>
+                Canlı Aktivite Akışı
+            </h5>
+            
+            <div class="activity-stream" id="activity-stream">
+                <div class="activity-item">
+                    <div class="d-flex justify-content-between">
+                        <span><strong>WARN</strong> - Kullanıcı uyarıldı</span>
+                        <small class="text-muted">12:34:56</small>
+                    </div>
+                    <div class="small text-muted">Sunucu: Test Server | Moderatör: Admin#1234</div>
+                </div>
+                
+                <div class="activity-item">
+                    <div class="d-flex justify-content-between">
+                        <span><strong>KICK</strong> - Kullanıcı atıldı</span>
+                        <small class="text-muted">12:33:45</small>
+                    </div>
+                    <div class="small text-muted">Sunucu: Main Server | Moderatör: Mod#5678</div>
+                </div>
+                
+                <div class="activity-item">
+                    <div class="d-flex justify-content-between">
+                        <span><strong>JOIN</strong> - Yeni sunucu eklendi</span>
+                        <small class="text-muted">12:32:10</small>
+                    </div>
+                    <div class="small text-muted">Sunucu: Gaming Community</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Performance Monitoring -->
+    <div class="col-lg-6 mb-4">
+        <div class="monitoring-card">
+            <h5 class="text-light mb-3">
+                <i class="fas fa-chart-line me-2"></i>
+                Performans İzleme
+            </h5>
+            
+            <div style="height: 300px;">
+                <canvas id="performanceMonitorChart"></canvas>
+            </div>
+            
+            <div class="row mt-3 text-center">
+                <div class="col-4">
+                    <div class="real-time-data">
+                        <div class="text-success">CPU</div>
+                        <div id="cpu-usage">15%</div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="real-time-data">
+                        <div class="text-info">RAM</div>
+                        <div id="ram-usage">245MB</div>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="real-time-data">
+                        <div class="text-warning">Latency</div>
+                        <div id="latency">25ms</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Server Status Grid -->
+<div class="row">
+    <div class="col-12">
+        <div class="monitoring-card">
+            <h5 class="text-light mb-3">
+                <i class="fas fa-server me-2"></i>
+                Sunucu Durumu
+            </h5>
+            
+            <div class="server-status" id="server-status">
+                <div class="server-item server-online">
+                    <div class="text-success">
+                        <i class="fas fa-circle fa-2x"></i>
+                    </div>
+                    <div class="mt-2">
+                        <strong>Main Server</strong>
+                        <div class="small text-muted">123 üye</div>
+                        <div class="small text-success">Online</div>
+                    </div>
+                </div>
+                
+                <div class="server-item server-online">
+                    <div class="text-success">
+                        <i class="fas fa-circle fa-2x"></i>
+                    </div>
+                    <div class="mt-2">
+                        <strong>Gaming Hub</strong>
+                        <div class="small text-muted">456 üye</div>
+                        <div class="small text-success">Online</div>
+                    </div>
+                </div>
+                
+                <div class="server-item server-warning">
+                    <div class="text-warning">
+                        <i class="fas fa-exclamation-circle fa-2x"></i>
+                    </div>
+                    <div class="mt-2">
+                        <strong>Test Server</strong>
+                        <div class="small text-muted">89 üye</div>
+                        <div class="small text-warning">Yüksek aktivite</div>
+                    </div>
+                </div>
+                
+                <div class="server-item server-online">
+                    <div class="text-success">
+                        <i class="fas fa-circle fa-2x"></i>
+                    </div>
+                    <div class="mt-2">
+                        <strong>Community</strong>
+                        <div class="small text-muted">234 üye</div>
+                        <div class="small text-success">Online</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Threat Detection -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="monitoring-card threat-level-medium">
+            <h5 class="text-light mb-3">
+                <i class="fas fa-shield-alt me-2"></i>
+                Tehdit Tespit Sistemi
+            </h5>
+            
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <div class="text-success">
+                            <i class="fas fa-check-circle fa-3x"></i>
+                        </div>
+                        <div class="mt-2">
+                            <strong>Spam Koruması</strong>
+                            <div class="small text-success">Aktif</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <div class="text-warning">
+                            <i class="fas fa-exclamation-triangle fa-3x"></i>
+                        </div>
+                        <div class="mt-2">
+                            <strong>Raid Koruması</strong>
+                            <div class="small text-warning">Tespit edildi</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <div class="text-success">
+                            <i class="fas fa-user-shield fa-3x"></i>
+                        </div>
+                        <div class="mt-2">
+                            <strong>Auto-Ban</strong>
+                            <div class="small text-success">Aktif</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-3">
+                    <div class="text-center">
+                        <div class="text-info">
+                            <i class="fas fa-eye fa-3x"></i>
+                        </div>
+                        <div class="mt-2">
+                            <strong>Monitoring</strong>
+                            <div class="small text-info">24/7</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+class LiveMonitoring {
+    constructor() {
+        this.initializeChart();
+        this.startRealTimeUpdates();
+        this.initializeActivityStream();
+    }
+    
+    initializeChart() {
+        const ctx = document.getElementById('performanceMonitorChart');
+        this.chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: this.generateTimeLabels(),
+                datasets: [{
+                    label: 'CPU %',
+                    data: this.generateRandomData(),
+                    borderColor: '#22c55e',
+                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                    tension: 0.4
+                }, {
+                    label: 'RAM MB',
+                    data: this.generateRandomData(200, 300),
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    tension: 0.4
+                }, {
+                    label: 'Latency ms',
+                    data: this.generateRandomData(20, 50),
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: { color: 'rgba(255,255,255,0.7)' }
+                    }
+                },
+                scales: {
+                    y: { 
+                        grid: { color: 'rgba(255,255,255,0.1)' },
+                        ticks: { color: 'rgba(255,255,255,0.7)' }
+                    },
+                    x: { 
+                        grid: { color: 'rgba(255,255,255,0.1)' },
+                        ticks: { color: 'rgba(255,255,255,0.7)' }
+                    }
+                }
+            }
+        });
+    }
+    
+    startRealTimeUpdates() {
+        // Update charts every 2 seconds
+        setInterval(() => {
+            this.updateChart();
+            this.updateMetrics();
+        }, 2000);
+        
+        // Add new activity every 5 seconds
+        setInterval(() => {
+            this.addNewActivity();
+        }, 5000);
+        
+        // Update server status every 10 seconds
+        setInterval(() => {
+            this.updateServerStatus();
+        }, 10000);
+    }
+    
+    updateChart() {
+        // Add new data point
+        this.chart.data.datasets.forEach((dataset, index) => {
+            let newValue;
+            switch(index) {
+                case 0: // CPU
+                    newValue = Math.random() * 30 + 10;
+                    document.getElementById('cpu-usage').textContent = Math.round(newValue) + '%';
+                    break;
+                case 1: // RAM
+                    newValue = Math.random() * 100 + 200;
+                    document.getElementById('ram-usage').textContent = Math.round(newValue) + 'MB';
+                    break;
+                case 2: // Latency
+                    newValue = Math.random() * 30 + 20;
+                    document.getElementById('latency').textContent = Math.round(newValue) + 'ms';
+                    break;
+            }
+            dataset.data.push(newValue);
+            if (dataset.data.length > 20) {
+                dataset.data.shift();
+            }
+        });
+        
+        // Update time labels
+        this.chart.data.labels.push(new Date().toLocaleTimeString());
+        if (this.chart.data.labels.length > 20) {
+            this.chart.data.labels.shift();
+        }
+        
+        this.chart.update('none');
+    }
+    
+    updateMetrics() {
+        // Update live commands
+        const commands = document.getElementById('live-commands');
+        const currentCommands = parseInt(commands.textContent.replace(',', ''));
+        const newCommands = currentCommands + Math.floor(Math.random() * 10);
+        commands.textContent = newCommands.toLocaleString();
+        
+        // Update response time
+        const responseTime = Math.floor(Math.random() * 20) + 20;
+        document.getElementById('live-response-time').textContent = responseTime + 'ms';
+        
+        // Update threats
+        const threats = Math.floor(Math.random() * 5);
+        document.getElementById('live-threats').textContent = threats;
+    }
+    
+    addNewActivity() {
+        const activities = [
+            { type: 'WARN', action: 'Kullanıcı uyarıldı', server: 'Test Server', mod: 'Admin#1234' },
+            { type: 'KICK', action: 'Kullanıcı atıldı', server: 'Main Server', mod: 'Mod#5678' },
+            { type: 'BAN', action: 'Kullanıcı banlandı', server: 'Gaming Hub', mod: 'Admin#9999' },
+            { type: 'MUTE', action: 'Kullanıcı susturuldu', server: 'Community', mod: 'Mod#1111' },
+            { type: 'JOIN', action: 'Yeni üye katıldı', server: 'Test Server', mod: null }
+        ];
+        
+        const activity = activities[Math.floor(Math.random() * activities.length)];
+        const time = new Date().toLocaleTimeString();
+        
+        const activityHtml = `
+            <div class="activity-item activity-new">
+                <div class="d-flex justify-content-between">
+                    <span><strong>${activity.type}</strong> - ${activity.action}</span>
+                    <small class="text-muted">${time}</small>
+                </div>
+                <div class="small text-muted">
+                    Sunucu: ${activity.server}
+                    ${activity.mod ? ` | Moderatör: ${activity.mod}` : ''}
+                </div>
+            </div>
+        `;
+        
+        const stream = document.getElementById('activity-stream');
+        stream.insertAdjacentHTML('afterbegin', activityHtml);
+        
+        // Remove old activities (keep last 10)
+        const items = stream.querySelectorAll('.activity-item');
+        if (items.length > 10) {
+            items[items.length - 1].remove();
+        }
+        
+        // Remove new class after animation
+        setTimeout(() => {
+            const newItem = stream.querySelector('.activity-new');
+            if (newItem) {
+                newItem.classList.remove('activity-new');
+            }
+        }, 500);
+    }
+    
+    updateServerStatus() {
+        const serverItems = document.querySelectorAll('.server-item');
+        serverItems.forEach(item => {
+            const random = Math.random();
+            if (random > 0.8) {
+                // Change status occasionally
+                if (item.classList.contains('server-online')) {
+                    if (Math.random() > 0.7) {
+                        item.className = 'server-item server-warning';
+                        item.querySelector('.small:last-child').textContent = 'Yüksek aktivite';
+                        item.querySelector('.small:last-child').className = 'small text-warning';
+                        item.querySelector('i').className = 'fas fa-exclamation-circle fa-2x';
+                        item.querySelector('.text-success').className = 'text-warning';
+                    }
+                } else if (item.classList.contains('server-warning')) {
+                    item.className = 'server-item server-online';
+                    item.querySelector('.small:last-child').textContent = 'Online';
+                    item.querySelector('.small:last-child').className = 'small text-success';
+                    item.querySelector('i').className = 'fas fa-circle fa-2x';
+                    item.querySelector('.text-warning').className = 'text-success';
+                }
+            }
+        });
+    }
+    
+    initializeActivityStream() {
+        // Auto-scroll to top when new activity is added
+        const stream = document.getElementById('activity-stream');
+        const observer = new MutationObserver(() => {
+            stream.scrollTop = 0;
+        });
+        
+        observer.observe(stream, {
+            childList: true,
+            subtree: true
+        });
+    }
+    
+    generateTimeLabels() {
+        const labels = [];
+        for (let i = 19; i >= 0; i--) {
+            const time = new Date();
+            time.setSeconds(time.getSeconds() - i * 2);
+            labels.push(time.toLocaleTimeString());
+        }
+        return labels;
+    }
+    
+    generateRandomData(min = 0, max = 100) {
+        return Array.from({length: 20}, () => Math.random() * (max - min) + min);
+    }
+}
+
+// Initialize live monitoring
+document.addEventListener('DOMContentLoaded', () => {
+    new LiveMonitoring();
+});
+
+// Add notification for critical events
+function showCriticalAlert(message) {
+    const alert = document.createElement('div');
+    alert.className = 'alert alert-danger alert-dismissible fade show position-fixed';
+    alert.style.top = '20px';
+    alert.style.right = '20px';
+    alert.style.zIndex = '9999';
+    alert.innerHTML = `
+        <strong>Kritik Uyarı!</strong> ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    document.body.appendChild(alert);
+    
+    setTimeout(() => alert.remove(), 10000);
+}
+
+// Simulate critical alerts occasionally
+setInterval(() => {
+    if (Math.random() > 0.95) {
+        showCriticalAlert('Sunucuda anormal aktivite tespit edildi!');
+    }
+}, 30000);
+</script>
+{% endblock %}
+{% extends "base.html" %}
+
+{% block title %}Canlı İzleme - {{ config.title }}{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2 class="text-light mb-1">
+            <i class="fas fa-satellite-dish me-2"></i>
+            Canlı İzleme
+        </h2>
+        <p class="text-muted mb-0">Sunucu aktivitelerini gerçek zamanlı takip edin</p>
+    </div>
+</div>
+
+<!-- Real-time Stats -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-primary border-0">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-white-50 mb-1">Aktif Kullanıcılar</h6>
+                        <h3 class="mb-0 text-white" id="active-users">-</h3>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-success border-0">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-white-50 mb-1">Mesaj/Dakika</h6>
+                        <h3 class="mb-0 text-white" id="messages-per-minute">-</h3>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="fas fa-comments fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-warning border-0">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-white-50 mb-1">Bot Ping</h6>
+                        <h3 class="mb-0 text-white" id="bot-ping-live">-</h3>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="fas fa-wifi fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-info border-0">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-white-50 mb-1">Uptime</h6>
+                        <h3 class="mb-0 text-white" id="bot-uptime-live">-</h3>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="fas fa-clock fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Live Activity Feed -->
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card bg-secondary border-0">
+            <div class="card-header bg-transparent border-bottom border-dark">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-stream me-2"></i>
+                    Canlı Aktivite Akışı
+                    <span class="badge bg-success ms-2">CANLI</span>
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="live-activity-feed" style="max-height: 500px; overflow-y: auto;">
+                    <div class="text-center text-muted py-4">
+                        <i class="fas fa-spinner fa-spin fa-2x mb-3"></i>
+                        <p>Canlı aktiviteler bekleniyor...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card bg-secondary border-0">
+            <div class="card-header bg-transparent border-bottom border-dark">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-bell me-2"></i>
+                    Bildirimler
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="notifications-enabled" checked>
+                    <label class="form-check-label text-light" for="notifications-enabled">
+                        Bildirimler Aktif
+                    </label>
+                </div>
+                
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="sound-enabled">
+                    <label class="form-check-label text-light" for="sound-enabled">
+                        Ses Bildirimleri
+                    </label>
+                </div>
+                
+                <hr class="border-dark">
+                
+                <h6 class="text-light mb-3">Filtreler</h6>
+                
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="filter-warnings" checked>
+                    <label class="form-check-label text-light" for="filter-warnings">
+                        Uyarılar
+                    </label>
+                </div>
+                
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="filter-bans" checked>
+                    <label class="form-check-label text-light" for="filter-bans">
+                        Banlar
+                    </label>
+                </div>
+                
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="filter-kicks">
+                    <label class="form-check-label text-light" for="filter-kicks">
+                        Atılmalar
+                    </label>
+                </div>
+                
+                <div class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" id="filter-mutes">
+                    <label class="form-check-label text-light" for="filter-mutes">
+                        Susturmalar
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Initialize live monitoring
+    initializeLiveMonitoring();
+});
+
+function initializeLiveMonitoring() {
+    // Update stats every 5 seconds
+    setInterval(updateLiveStats, 5000);
+    
+    // Update activity feed every 2 seconds
+    setInterval(updateActivityFeed, 2000);
+    
+    // Initial load
+    updateLiveStats();
+}
+
+function updateLiveStats() {
+    // Simulate live stats
+    $('#active-users').text(Math.floor(Math.random() * 100) + 50);
+    $('#messages-per-minute').text(Math.floor(Math.random() * 20) + 5);
+    $('#bot-ping-live').text(Math.floor(Math.random() * 50) + 20 + 'ms');
+    
+    // Update uptime
+    const uptime = new Date().getTime() - new Date().setHours(0,0,0,0);
+    const hours = Math.floor(uptime / (1000 * 60 * 60));
+    const minutes = Math.floor((uptime % (1000 * 60 * 60)) / (1000 * 60));
+    $('#bot-uptime-live').text(hours + 'h ' + minutes + 'm');
+}
+
+function updateActivityFeed() {
+    // Simulate new activity
+    if (Math.random() < 0.3) {
+        const activities = [
+            'Kullanıcı uyarıldı',
+            'Mesaj silindi',
+            'Yeni üye katıldı',
+            'Kullanıcı sunucudan ayrıldı',
+            'Rol verildi'
+        ];
+        
+        const activity = activities[Math.floor(Math.random() * activities.length)];
+        const time = new Date().toLocaleTimeString('tr-TR');
+        
+        const feedHtml = `
+            <div class="border-bottom border-dark pb-2 mb-2 fade-in">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <strong class="text-primary">${activity}</strong>
+                        <small class="text-muted d-block">
+                            Kullanıcı: User#1234
+                        </small>
+                    </div>
+                    <small class="text-muted">${time}</small>
+                </div>
+            </div>
+        `;
+        
+        $('#live-activity-feed').prepend(feedHtml);
+        
+        // Keep only last 20 items
+        const items = $('#live-activity-feed').children();
+        if (items.length > 20) {
+            items.last().remove();
+        }
+    }
+}
+</script>
+{% endblock %}

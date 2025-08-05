@@ -1,0 +1,633 @@
+
+<!DOCTYPE html>
+{% extends "base.html" %}
+
+{% block title %}AI Asistan - {{ config.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.chat-container {
+    height: 600px;
+    overflow-y: auto;
+    border: 1px solid #374151;
+    border-radius: 12px;
+    background: #1f2937;
+}
+
+.chat-message {
+    padding: 15px;
+    margin: 10px;
+    border-radius: 10px;
+    max-width: 80%;
+}
+
+.user-message {
+    background: linear-gradient(135deg, #5865F2, #4f46e5);
+    color: white;
+    margin-left: auto;
+    text-align: right;
+}
+
+.ai-message {
+    background: #374151;
+    color: #f8fafc;
+    margin-right: auto;
+}
+
+.typing-indicator {
+    display: none;
+    padding: 15px;
+    margin: 10px;
+    background: #374151;
+    border-radius: 10px;
+    max-width: 80%;
+}
+
+.typing-dots {
+    display: inline-flex;
+    gap: 4px;
+}
+
+.typing-dots div {
+    width: 8px;
+    height: 8px;
+    background: #9ca3af;
+    border-radius: 50%;
+    animation: typing 1.4s infinite;
+}
+
+.typing-dots div:nth-child(2) { animation-delay: 0.2s; }
+.typing-dots div:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typing {
+    0%, 60%, 100% { transform: translateY(0); }
+    30% { transform: translateY(-10px); }
+}
+
+.quick-questions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.quick-question-btn {
+    background: rgba(88, 101, 242, 0.1);
+    border: 1px solid rgba(88, 101, 242, 0.3);
+    color: #5865F2;
+    border-radius: 20px;
+    padding: 8px 16px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.quick-question-btn:hover {
+    background: rgba(88, 101, 242, 0.2);
+    transform: translateY(-1px);
+}
+
+.ai-status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 15px;
+    padding: 10px;
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    border-radius: 8px;
+}
+
+.status-dot {
+    width: 10px;
+    height: 10px;
+    background: #22c55e;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+    70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- AI Assistant Page -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="text-light mb-1">
+                    <i class="fas fa-robot me-2"></i>
+                    IronWard AI Asistan
+                </h2>
+                <p class="text-muted mb-0">Akıllı destek sistemi - Sorularınızı sorun, anında yanıt alın!</p>
+            </div>
+            <div>
+                <button class="btn btn-outline-primary" onclick="clearChat()">
+                    <i class="fas fa-trash me-2"></i>
+                    Sohbeti Temizle
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- AI Status -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="ai-status">
+            <div class="status-dot"></div>
+            <span class="text-success fw-bold">IronWard AI Çevrimiçi</span>
+            <span class="text-muted">| 7/24 Aktif Destek</span>
+        </div>
+    </div>
+</div>
+
+<!-- Main Chat Interface -->
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card bg-secondary border-0">
+            <div class="card-header bg-transparent border-bottom border-dark">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-comments me-2"></i>
+                    AI Sohbet
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <!-- Chat Messages -->
+                <div id="chatContainer" class="chat-container">
+                    <div class="ai-message">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-robot text-primary me-2"></i>
+                            <strong>IronWard AI</strong>
+                            <small class="text-muted ms-auto">${new Date().toLocaleTimeString('tr-TR')}</small>
+                        </div>
+                        <p class="mb-0">
+                            👋 Merhaba! Ben <strong>IronWard AI</strong>, sizin akıllı asistanınızım! 
+                            <br><br>
+                            <strong>Size nasıl yardım edebilirim?</strong>
+                            <br>• 🤖 Bot sorunları çözme
+                            <br>• 🔧 Teknik destek
+                            <br>• 📊 İstatistik analizi
+                            <br>• ⚙️ Ayar yardımı
+                            <br>• 🛡️ Moderasyon tavsiyeleri
+                            <br><br>
+                            <em>Eğer çözemeyeceğim bir sorun varsa, sizi Discord üzerinden geliştiriciye yönlendireceğim!</em>
+                        </p>
+                    </div>
+                    
+                    <!-- Typing Indicator -->
+                    <div id="typingIndicator" class="typing-indicator">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-robot text-primary me-2"></i>
+                            <span class="me-2">IronWard AI yazıyor</span>
+                            <div class="typing-dots">
+                                <div></div>
+                                <div></div>
+                                <div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Questions -->
+                <div class="p-3 border-top border-dark">
+                    <p class="text-muted mb-2">💡 <strong>Hızlı Sorular:</strong></p>
+                    <div class="quick-questions">
+                        <button class="quick-question-btn" onclick="aiAssistant.askQuestion('Bot neden çalışmıyor?')">
+                            🤖 Bot çalışmıyor
+                        </button>
+                        <button class="quick-question-btn" onclick="aiAssistant.askQuestion('Moderasyon ayarları nasıl yapılır?')">
+                            🛡️ Moderasyon ayarları
+                        </button>
+                        <button class="quick-question-btn" onclick="aiAssistant.askQuestion('Komutlar çalışmıyor?')">
+                            ⚡ Komut sorunları
+                        </button>
+                        <button class="quick-question-btn" onclick="aiAssistant.askQuestion('Sunucu istatistiklerini göster')">
+                            📊 İstatistikler
+                        </button>
+                        <button class="quick-question-btn" onclick="aiAssistant.askQuestion('Geliştiriciye nasıl ulaşırım?')">
+                            💬 Discord desteği
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Message Input -->
+                <div class="p-3 border-top border-dark">
+                    <div class="input-group">
+                        <input type="text" id="messageInput" class="form-control bg-dark border-secondary text-light" 
+                               placeholder="Sorunuzu yazın... (Örn: Bot neden çevrimdışı?)" maxlength="500">
+                        <button class="btn btn-primary" type="button" onclick="aiAssistant.sendMessage()">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                    <small class="text-muted">Enter tuşuna basarak da gönderebilirsiniz</small>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- AI Info Sidebar -->
+    <div class="col-lg-4">
+        <div class="card bg-secondary border-0 mb-4">
+            <div class="card-header bg-transparent border-bottom border-dark">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    AI Yetenekleri
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6 class="text-primary">🔧 Teknik Destek</h6>
+                    <p class="small text-muted mb-0">Bot kurulumu, komut sorunları, hata çözümleri</p>
+                </div>
+                <div class="mb-3">
+                    <h6 class="text-success">🛡️ Moderasyon Yardımı</h6>
+                    <p class="small text-muted mb-0">Otomatik moderasyon, ceza sistemi ayarları</p>
+                </div>
+                <div class="mb-3">
+                    <h6 class="text-info">📊 Analiz & Raporlar</h6>
+                    <p class="small text-muted mb-0">Sunucu istatistikleri, performans analizi</p>
+                </div>
+                <div class="mb-3">
+                    <h6 class="text-warning">⚙️ Konfigürasyon</h6>
+                    <p class="small text-muted mb-0">Sunucu ayarları, özellik yapılandırması</p>
+                </div>
+                <div>
+                    <h6 class="text-danger">🆘 Acil Destek</h6>
+                    <p class="small text-muted mb-0">Çözemediğim sorunlarda Discord desteği</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Discord Contact Card -->
+        <div class="card bg-secondary border-0">
+            <div class="card-header bg-transparent border-bottom border-dark">
+                <h5 class="card-title mb-0">
+                    <i class="fab fa-discord me-2"></i>
+                    Doğrudan Destek
+                </h5>
+            </div>
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fab fa-discord fa-3x text-primary"></i>
+                </div>
+                <h6 class="text-light">Çözümü bulamadım mı?</h6>
+                <p class="text-muted small mb-3">
+                    AI'ın çözemediği sorunlar için direkt geliştiriciye ulaşın!
+                </p>
+                <button class="btn btn-primary" onclick="requestDiscordSupport()">
+                    <i class="fab fa-discord me-2"></i>
+                    Discord Desteği İste
+                </button>
+                <div class="mt-3">
+                    <small class="text-muted">
+                        <i class="fas fa-clock me-1"></i>
+                        Genellikle 5-10 dakika içinde yanıt
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+class AIAssistant {
+    constructor() {
+        this.messages = [];
+        this.isTyping = false;
+        this.setupEventListeners();
+        this.loadChatHistory();
+    }
+    
+    setupEventListeners() {
+        // Enter key to send message
+        document.getElementById('messageInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                this.sendMessage();
+            }
+        });
+        
+        // Auto-resize chat container
+        this.scrollToBottom();
+    }
+    
+    async sendMessage() {
+        const input = document.getElementById('messageInput');
+        const message = input.value.trim();
+        
+        if (!message || this.isTyping) return;
+        
+        // Add user message
+        this.addMessage(message, 'user');
+        input.value = '';
+        
+        // Show typing indicator
+        this.showTyping();
+        
+        // Get AI response
+        try {
+            const response = await this.getAIResponse(message);
+            this.hideTyping();
+            this.addMessage(response, 'ai');
+        } catch (error) {
+            this.hideTyping();
+            this.addMessage('Üzgünüm, şu an teknik bir sorun yaşıyorum. Lütfen Discord desteği isteyin.', 'ai');
+        }
+    }
+    
+    async getAIResponse(message) {
+        try {
+            const response = await fetch('/api/ai/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    message: message
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            
+            const data = await response.json();
+            return data.response;
+        } catch (error) {
+            console.error('AI API Error:', error);
+            return 'Üzgünüm, şu an teknik bir sorun yaşıyorum. Lütfen Discord desteği isteyin.';
+        }
+    }
+    
+    askQuestion(question) {
+        document.getElementById('messageInput').value = question;
+        this.sendMessage();
+    }
+    
+    showTyping() {
+        this.isTyping = true;
+        document.getElementById('typingIndicator').style.display = 'block';
+        this.scrollToBottom();
+    }
+    
+    hideTyping() {
+        this.isTyping = false;
+        document.getElementById('typingIndicator').style.display = 'none';
+    }
+    
+    scrollToBottom() {
+        const chatContainer = document.getElementById('chatContainer');
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+    
+    loadChatHistory() {
+        // Load chat history from localStorage (optional)
+        const saved = localStorage.getItem('ai_chat_history');
+        if (saved) {
+            this.messages = JSON.parse(saved);
+        }
+    }
+    
+    saveChatHistory() {
+        // Save chat history to localStorage (optional)
+        localStorage.setItem('ai_chat_history', JSON.stringify(this.messages));
+    }
+    
+    addMessage(content, type) {
+        const chatContainer = document.getElementById('chatContainer');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `chat-message ${type}-message`;
+        
+        const time = new Date().toLocaleTimeString('tr-TR');
+        
+        if (type === 'user') {
+            messageDiv.innerHTML = `
+                <div class="d-flex align-items-center mb-2">
+                    <small class="text-white-50 me-auto">${time}</small>
+                    <strong class="text-white">Sen</strong>
+                    <i class="fas fa-user text-white ms-2"></i>
+                </div>
+                <p class="mb-0">${content}</p>
+            `;
+        } else {
+            messageDiv.innerHTML = `
+                <div class="d-flex align-items-center mb-2">
+                    <i class="fas fa-robot text-primary me-2"></i>
+                    <strong>IronWard AI</strong>
+                    <small class="text-muted ms-auto">${time}</small>
+                </div>
+                <div class="mb-0">${content.replace(/\n/g, '<br>')}</div>
+            `;
+        }
+        
+        chatContainer.appendChild(messageDiv);
+        this.scrollToBottom();
+        
+        // Save to history
+        this.messages.push({ content, type, time });
+        this.saveChatHistory();
+    }
+    
+    showTyping() {
+        this.isTyping = true;
+        document.getElementById('typingIndicator').style.display = 'block';
+        this.scrollToBottom();
+    }
+    
+    hideTyping() {
+        this.isTyping = false;
+        document.getElementById('typingIndicator').style.display = 'none';
+    }
+    
+    scrollToBottom() {
+        const chatContainer = document.getElementById('chatContainer');
+        setTimeout(() => {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }, 100);
+    }
+    
+    saveChatHistory() {
+        localStorage.setItem('ironward_chat_history', JSON.stringify(this.messages));
+    }
+    
+    loadChatHistory() {
+        const history = localStorage.getItem('ironward_chat_history');
+        if (history) {
+            this.messages = JSON.parse(history);
+            // Restore last 5 messages
+            const recentMessages = this.messages.slice(-5);
+            recentMessages.forEach(msg => {
+                if (msg.type !== 'ai' || !msg.content.includes('Merhaba! Ben')) {
+                    this.addMessageToDOM(msg.content, msg.type, msg.time);
+                }
+            });
+        }
+    }
+    
+    addMessageToDOM(content, type, time) {
+        const chatContainer = document.getElementById('chatContainer');
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `chat-message ${type}-message`;
+        
+        if (type === 'user') {
+            messageDiv.innerHTML = `
+                <div class="d-flex align-items-center mb-2">
+                    <small class="text-white-50 me-auto">${time}</small>
+                    <strong class="text-white">Sen</strong>
+                    <i class="fas fa-user text-white ms-2"></i>
+                </div>
+                <p class="mb-0">${content}</p>
+            `;
+        } else {
+            messageDiv.innerHTML = `
+                <div class="d-flex align-items-center mb-2">
+                    <i class="fas fa-robot text-primary me-2"></i>
+                    <strong>IronWard AI</strong>
+                    <small class="text-muted ms-auto">${time}</small>
+                </div>
+                <div class="mb-0">${content.replace(/\n/g, '<br>')}</div>
+            `;
+        }
+        
+        chatContainer.appendChild(messageDiv);
+        
+        // Add to messages array and save history
+        this.messages.push({
+            content: content,
+            type: type,
+            timestamp: new Date().toISOString()
+        });
+        this.saveChatHistory();
+        
+        // Auto scroll to bottom
+        this.scrollToBottom();
+    }
+    
+    clearChat() {
+        const chatContainer = document.getElementById('chatContainer');
+        // Keep only the welcome message
+        const welcomeMessage = chatContainer.children[0];
+        chatContainer.innerHTML = '';
+        chatContainer.appendChild(welcomeMessage);
+        
+        this.messages = [];
+        this.saveChatHistory();
+    }
+}
+
+// Global functions
+function askQuestion(question) {
+    document.getElementById('messageInput').value = question;
+    window.aiAssistant.sendMessage();
+}
+
+function sendMessage() {
+    window.aiAssistant.sendMessage();
+}
+
+function clearChat() {
+    if (confirm('Sohbet geçmişini temizlemek istediğinizden emin misiniz?')) {
+        window.aiAssistant.clearChat();
+    }
+}
+
+function requestDiscordSupport() {
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.innerHTML = `
+        <div class="modal-dialog">
+            <div class="modal-content bg-dark border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title text-light">
+                        <i class="fab fa-discord me-2"></i>
+                        Discord Desteği İste
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle me-2"></i>Destek Talebi</h6>
+                        <p class="mb-0">AI'ın çözemediği sorunlar için Discord üzerinden doğrudan geliştiriciye mesaj gönderilecek.</p>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-light">Sorunuzun Konusu:</label>
+                        <select class="form-select bg-secondary border-dark text-light" id="supportCategory">
+                            <option value="bot-issue">🤖 Bot Teknik Sorunu</option>
+                            <option value="command-problem">⚡ Komut Çalışmıyor</option>
+                            <option value="moderation-help">🛡️ Moderasyon Yardımı</option>
+                            <option value="setup-issue">⚙️ Kurulum Sorunu</option>
+                            <option value="other">❓ Diğer</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-light">Sorun Detayı:</label>
+                        <textarea class="form-control bg-secondary border-dark text-light" 
+                                  id="supportMessage" rows="4" 
+                                  placeholder="Lütfen sorunuzu detaylı açıklayın..."></textarea>
+                    </div>
+                    <div class="alert alert-warning">
+                        <small>
+                            <i class="fas fa-clock me-1"></i>
+                            Genellikle 5-10 dakika içinde Discord'dan yanıt alırsınız.
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-primary" onclick="sendDiscordRequest()">
+                        <i class="fab fa-discord me-2"></i>
+                        Discord'a Gönder
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    const modalInstance = new bootstrap.Modal(modal);
+    modalInstance.show();
+    
+    modal.addEventListener('hidden.bs.modal', () => {
+        document.body.removeChild(modal);
+    });
+}
+
+function sendDiscordRequest() {
+    const category = document.getElementById('supportCategory').value;
+    const message = document.getElementById('supportMessage').value;
+    
+    if (!message.trim()) {
+        alert('Lütfen sorunuzu açıklayın!');
+        return;
+    }
+    
+    // Simulate sending to Discord
+    setTimeout(() => {
+        bootstrap.Modal.getInstance(document.querySelector('.modal')).hide();
+        
+        // Add AI message about Discord support
+        window.aiAssistant.addMessage(
+            '✅ **Discord desteği talebiniz gönderildi!**\n\nGeliştiriciye şu bilgiler iletildi:\n• Konu: ' + 
+            document.querySelector('#supportCategory option:checked').text + '\n• Mesaj: ' + message + 
+            '\n\n💬 Discord\'dan 5-10 dakika içinde yanıt bekliyebilirsiniz!', 
+            'ai'
+        );
+        
+        // Scroll to bottom to show the new message
+        window.aiAssistant.scrollToBottom();
+    }, 1000);
+}
+
+// Initialize AI Assistant when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    window.aiAssistant = new AIAssistant();
+});
+</script>
+{% endblock %}

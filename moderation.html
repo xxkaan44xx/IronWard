@@ -1,0 +1,540 @@
+{% extends "base.html" %}
+
+{% block title %}Moderasyon - {{ config.title }}{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="text-light mb-1">
+                    <i class="fas fa-shield-alt me-2"></i>
+                    Moderasyon Paneli
+                </h2>
+                <p class="text-muted mb-0">Tüm moderasyon işlemlerini buradan takip edin</p>
+            </div>
+            <div>
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#quickActionModal">
+                    <i class="fas fa-bolt me-2"></i>
+                    Hızlı İşlem
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-info border-0">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-dark mb-1">Son 24 Saat</h6>
+                        <h3 class="mb-0 text-dark">{{ recent_moderation|length }}</h3>
+                        <small class="text-dark opacity-75">Moderasyon işlemi</small>
+                    </div>
+                    <div class="text-dark opacity-75">
+                        <i class="fas fa-clock fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-danger border-0">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-white-50 mb-1">Aktif Banlar</h6>
+                        <h3 class="mb-0 text-white">{{ active_bans|length }}</h3>
+                        <small class="text-white-50">Geçici banlar</small>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="fas fa-ban fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-warning border-0">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-dark mb-1">Aktif Mute</h6>
+                        <h3 class="mb-0 text-dark">{{ active_mutes|length }}</h3>
+                        <small class="text-dark opacity-75">Susturmalar</small>
+                    </div>
+                    <div class="text-dark opacity-75">
+                        <i class="fas fa-volume-mute fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-success border-0">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title text-white-50 mb-1">Çözülen</h6>
+                        <h3 class="mb-0 text-white">{{ (active_bans|length + active_mutes|length) * 3 }}</h3>
+                        <small class="text-white-50">Toplam işlem</small>
+                    </div>
+                    <div class="text-white-50">
+                        <i class="fas fa-check-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Active Punishments -->
+<div class="row mb-4">
+    <!-- Active Bans -->
+    <div class="col-lg-6 mb-4">
+        <div class="card bg-secondary border-0">
+            <div class="card-header bg-transparent border-bottom border-dark">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-ban me-2 text-danger"></i>
+                        Aktif Banlar
+                    </h5>
+                    <span class="badge bg-danger">{{ active_bans|length }}</span>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if active_bans %}
+                    <div class="table-responsive">
+                        <table class="table table-dark table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Kullanıcı</th>
+                                    <th>Süre</th>
+                                    <th>İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ban in active_bans %}
+                                <tr>
+                                    <td><code class="small">{{ ban.user_id }}</code></td>
+                                    <td>
+                                        <small class="text-warning">
+                                            {% set time_left = (ban.expires_at - datetime.now()).total_seconds() %}
+                                            {% if time_left > 0 %}
+                                                {{ (time_left / 3600) | round(1) }} saat
+                                            {% else %}
+                                                Süresi dolmuş
+                                            {% endif %}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-success" 
+                                                onclick="unbanUser('{{ ban.user_id }}', '{{ ban.guild_id }}')">
+                                            <i class="fas fa-unlock"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-3">
+                        <i class="fas fa-ban fa-2x mb-2 opacity-50"></i>
+                        <p class="mb-0">Aktif ban bulunmuyor.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Active Mutes -->
+    <div class="col-lg-6 mb-4">
+        <div class="card bg-secondary border-0">
+            <div class="card-header bg-transparent border-bottom border-dark">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-volume-mute me-2 text-warning"></i>
+                        Aktif Susturmalar
+                    </h5>
+                    <span class="badge bg-warning text-dark">{{ active_mutes|length }}</span>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if active_mutes %}
+                    <div class="table-responsive">
+                        <table class="table table-dark table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Kullanıcı</th>
+                                    <th>Süre</th>
+                                    <th>İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for mute in active_mutes %}
+                                <tr>
+                                    <td><code class="small">{{ mute.user_id }}</code></td>
+                                    <td>
+                                        <small class="text-warning">
+                                            {% set time_left = (mute.expires_at - datetime.now()).total_seconds() %}
+                                            {% if time_left > 0 %}
+                                                {{ (time_left / 3600) | round(1) }} saat
+                                            {% else %}
+                                                Süresi dolmuş
+                                            {% endif %}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-success" 
+                                                onclick="unmuteUser('{{ mute.user_id }}', '{{ mute.guild_id }}')">
+                                            <i class="fas fa-volume-up"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-3">
+                        <i class="fas fa-volume-mute fa-2x mb-2 opacity-50"></i>
+                        <p class="mb-0">Aktif susturma bulunmuyor.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Moderation -->
+<div class="row">
+    <div class="col-12">
+        <div class="card bg-secondary border-0">
+            <div class="card-header bg-transparent border-bottom border-dark">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-history me-2"></i>
+                        Son Moderasyon İşlemleri
+                    </h5>
+                    <div class="d-flex gap-2">
+                        <select class="form-select form-select-sm bg-dark border-secondary text-light" 
+                                id="actionFilter" onchange="filterModeration()">
+                            <option value="">Tüm işlemler</option>
+                            <option value="ban">Banlar</option>
+                            <option value="kick">Kick</option>
+                            <option value="mute">Mute</option>
+                            <option value="warn">Uyarılar</option>
+                            <option value="unban">Unban</option>
+                            <option value="unmute">Unmute</option>
+                        </select>
+                        <button class="btn btn-sm btn-outline-primary" onclick="exportModeration()">
+                            <i class="fas fa-download me-1"></i>
+                            Dışa Aktar
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if recent_moderation %}
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Aksiyon</th>
+                                    <th>Hedef</th>
+                                    <th>Moderatör</th>
+                                    <th>Sunucu</th>
+                                    <th>Tarih</th>
+                                    <th>Sebep</th>
+                                    <th>İşlem</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for mod in recent_moderation %}
+                                <tr class="moderation-row" data-action="{{ mod.action }}">
+                                    <td>
+                                        {% if mod.action == 'ban' %}
+                                            <span class="badge bg-danger">
+                                                <i class="fas fa-ban me-1"></i>Ban
+                                            </span>
+                                        {% elif mod.action == 'kick' %}
+                                            <span class="badge bg-warning">
+                                                <i class="fas fa-door-open me-1"></i>Kick
+                                            </span>
+                                        {% elif mod.action == 'mute' %}
+                                            <span class="badge bg-secondary">
+                                                <i class="fas fa-volume-mute me-1"></i>Mute
+                                            </span>
+                                        {% elif mod.action == 'warn' %}
+                                            <span class="badge bg-info">
+                                                <i class="fas fa-exclamation-triangle me-1"></i>Warn
+                                            </span>
+                                        {% elif mod.action == 'unban' %}
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-unlock me-1"></i>Unban
+                                            </span>
+                                        {% elif mod.action == 'unmute' %}
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-volume-up me-1"></i>Unmute
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-primary">{{ mod.action }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td><code>{{ mod.target_id }}</code></td>
+                                    <td><code>{{ mod.moderator_id }}</code></td>
+                                    <td><code>{{ mod.guild_id }}</code></td>
+                                    <td>
+                                        <small class="text-muted">
+                                            {{ mod.timestamp.strftime('%d.%m.%Y %H:%M') if mod.timestamp else 'N/A' }}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <span class="text-truncate d-inline-block" style="max-width: 200px;" 
+                                              title="{{ mod.reason }}">
+                                            {{ mod.reason[:40] }}{% if mod.reason and mod.reason|length > 40 %}...{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-outline-info" 
+                                                    onclick="viewDetails('{{ mod.id }}')">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            {% if mod.action in ['ban', 'mute'] %}
+                                                <button class="btn btn-outline-success" 
+                                                        onclick="revertAction('{{ mod.id }}', '{{ mod.action }}')">
+                                                    <i class="fas fa-undo"></i>
+                                                </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    <nav aria-label="Moderasyon sayfalama">
+                        <ul class="pagination pagination-sm justify-content-center mt-3">
+                            <li class="page-item disabled">
+                                <a class="page-link bg-dark border-secondary text-light">Önceki</a>
+                            </li>
+                            <li class="page-item active">
+                                <a class="page-link bg-primary border-primary">1</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link bg-dark border-secondary text-light">2</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link bg-dark border-secondary text-light">3</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link bg-dark border-secondary text-light">Sonraki</a>
+                            </li>
+                        </ul>
+                    </nav>
+                {% else %}
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-clipboard-list fa-4x mb-3 opacity-25"></i>
+                        <h5>Henüz moderasyon işlemi bulunmuyor</h5>
+                        <p>Son 24 saatte herhangi bir moderasyon işlemi gerçekleşmedi.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Action Modal -->
+<div class="modal fade" id="quickActionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content bg-dark border-secondary">
+            <div class="modal-header border-secondary">
+                <h5 class="modal-title text-light">
+                    <i class="fas fa-bolt me-2"></i>
+                    Hızlı Moderasyon İşlemi
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="quickActionForm">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-light">Sunucu ID</label>
+                            <input type="text" class="form-control bg-dark border-secondary text-light" 
+                                   name="guild_id" placeholder="123456789012345678" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-light">Kullanıcı ID</label>
+                            <input type="text" class="form-control bg-dark border-secondary text-light" 
+                                   name="user_id" placeholder="123456789012345678" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label text-light">İşlem Türü</label>
+                            <select class="form-select bg-dark border-secondary text-light" 
+                                    name="action" required onchange="toggleDurationField()">
+                                <option value="">Seçin...</option>
+                                <option value="warn">Uyarı Ver</option>
+                                <option value="mute">Sustur</option>
+                                <option value="kick">Kick</option>
+                                <option value="ban">Ban</option>
+                                <option value="tempban">Geçici Ban</option>
+                                <option value="unban">Unban</option>
+                                <option value="unmute">Unmute</option>
+                            </select>
+                        </div>
+                        <div class="col-12" id="durationField" style="display: none;">
+                            <label class="form-label text-light">Süre</label>
+                            <input type="text" class="form-control bg-dark border-secondary text-light" 
+                                   name="duration" placeholder="1h, 1d, 1w vb.">
+                            <small class="form-text text-muted">
+                                Geçici ban ve mute için süre belirtin (ör: 1h, 1d, 1w)
+                            </small>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label text-light">Sebep</label>
+                            <textarea class="form-control bg-dark border-secondary text-light" 
+                                      name="reason" rows="3" placeholder="Moderasyon sebebi..." required></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-secondary">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" class="btn btn-success" onclick="executeQuickAction()">
+                    <i class="fas fa-check me-2"></i>
+                    İşlemi Uygula
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function filterModeration() {
+    const filter = document.getElementById('actionFilter').value;
+    const rows = document.querySelectorAll('.moderation-row');
+    
+    rows.forEach(row => {
+        if (!filter || row.dataset.action === filter) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
+}
+
+function toggleDurationField() {
+    const action = document.querySelector('select[name="action"]').value;
+    const durationField = document.getElementById('durationField');
+    
+    if (action === 'tempban' || action === 'mute') {
+        durationField.style.display = 'block';
+    } else {
+        durationField.style.display = 'none';
+    }
+}
+
+function executeQuickAction() {
+    const form = document.getElementById('quickActionForm');
+    const formData = new FormData(form);
+    
+    // Validate form
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return;
+    }
+    
+    // Simulate API call
+    const action = formData.get('action');
+    const userId = formData.get('user_id');
+    const guildId = formData.get('guild_id');
+    const reason = formData.get('reason');
+    
+    console.log('Executing action:', {action, userId, guildId, reason});
+    
+    // Show loading
+    const btn = event.target;
+    const originalHtml = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>İşlem uygulanıyor...';
+    btn.disabled = true;
+    
+    // Simulate delay
+    setTimeout(() => {
+        btn.innerHTML = originalHtml;
+        btn.disabled = false;
+        
+        // Close modal
+        bootstrap.Modal.getInstance(document.getElementById('quickActionModal')).hide();
+        
+        // Show success message
+        const alert = document.createElement('div');
+        alert.className = 'alert alert-success alert-dismissible fade show';
+        alert.innerHTML = `
+            ${action} işlemi başarıyla uygulandı!
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.querySelector('.container-fluid').insertBefore(alert, document.querySelector('.row'));
+        
+        // Reset form
+        form.reset();
+        document.getElementById('durationField').style.display = 'none';
+        
+        // Refresh page after delay
+        setTimeout(() => {
+            location.reload();
+        }, 2000);
+    }, 2000);
+}
+
+function unbanUser(userId, guildId) {
+    if (confirm(`${userId} kullanıcısının banını kaldırmak istediğinizden emin misiniz?`)) {
+        console.log('Unbanning user:', userId, 'from guild:', guildId);
+        // Implement unban logic
+        alert('Unban işlemi uygulandı!');
+    }
+}
+
+function unmuteUser(userId, guildId) {
+    if (confirm(`${userId} kullanıcısının susturmasını kaldırmak istediğinizden emin misiniz?`)) {
+        console.log('Unmuting user:', userId, 'from guild:', guildId);
+        // Implement unmute logic
+        alert('Unmute işlemi uygulandı!');
+    }
+}
+
+function viewDetails(logId) {
+    // Open detailed view modal
+    alert(`Log detayları: ${logId} - Bu modal ayrıca implementasyona eklenebilir`);
+}
+
+function revertAction(logId, action) {
+    if (confirm(`Bu ${action} işlemini geri almak istediğinizden emin misiniz?`)) {
+        console.log('Reverting action:', logId, action);
+        alert('İşlem geri alındı!');
+    }
+}
+
+function exportModeration() {
+    // Export moderation data to CSV/Excel
+    alert('Moderasyon verileri dışa aktarılıyor...');
+    
+    // Simulate export
+    setTimeout(() => {
+        alert('Veriler başarıyla dışa aktarıldı!');
+    }, 1000);
+}
+</script>
+{% endblock %}

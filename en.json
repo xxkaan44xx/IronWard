@@ -1,0 +1,144 @@
+{
+  "commands": {
+    "ban": {
+      "name": "ban",
+      "description": "Bans a user from the server",
+      "success": "✅ {user} has been banned successfully!",
+      "reason": "Reason: {reason}",
+      "dm_message": "🚫 You have been banned from {guild}!\nReason: {reason}"
+    },
+    "unban": {
+      "name": "unban",
+      "description": "Unbans a user from the server", 
+      "success": "✅ {user} has been unbanned!",
+      "not_banned": "❌ This user is not banned!"
+    },
+    "kick": {
+      "name": "kick",
+      "description": "Kicks a user from the server",
+      "success": "✅ {user} has been kicked successfully!",
+      "reason": "Reason: {reason}",
+      "dm_message": "🚪 You have been kicked from {guild}!\nReason: {reason}"
+    },
+    "mute": {
+      "name": "mute",
+      "description": "Mutes a user",
+      "success": "🔇 {user} has been muted for {duration}!",
+      "permanent": "🔇 {user} has been permanently muted!",
+      "already_muted": "❌ This user is already muted!",
+      "no_mute_role": "❌ Mute role not set! Use `{prefix}setmuterole @role`."
+    },
+    "unmute": {
+      "name": "unmute",
+      "description": "Unmutes a user",
+      "success": "🔊 {user} has been unmuted!",
+      "not_muted": "❌ This user is not muted!"
+    },
+    "warn": {
+      "name": "warn",
+      "description": "Warns a user",
+      "success": "⚠️ {user} has been warned!\nReason: {reason}",
+      "dm_message": "⚠️ You have been warned in {guild}!\nReason: {reason}"
+    },
+    "warnings": {
+      "name": "warnings",
+      "description": "Shows user warnings",
+      "title": "⚠️ {user} Warnings",
+      "no_warnings": "✅ This user has no warnings!",
+      "warning_format": "**#{id}** - {reason}\n📅 {date} | 👮 <@{moderator}>"
+    },
+    "clearwarns": {
+      "name": "clearwarns",
+      "description": "Clears user warnings",
+      "success": "✅ {user} warnings have been cleared!"
+    },
+    "purge": {
+      "name": "purge",
+      "description": "Deletes specified amount of messages",
+      "success": "🗑️ {count} messages deleted!",
+      "invalid_amount": "❌ Invalid amount! Enter a number between 1-100."
+    },
+    "lock": {
+      "name": "lock",
+      "description": "Locks the channel",
+      "success": "🔒 Channel has been locked!",
+      "already_locked": "❌ This channel is already locked!"
+    },
+    "unlock": {
+      "name": "unlock",
+      "description": "Unlocks the channel",
+      "success": "🔓 Channel has been unlocked!",
+      "not_locked": "❌ This channel is not locked!"
+    },
+    "slowmode": {
+      "name": "slowmode",
+      "description": "Sets slowmode",
+      "success": "🐌 Slowmode set to {seconds} seconds!",
+      "disabled": "✅ Slowmode disabled!",
+      "invalid_time": "❌ Invalid time! Enter a number between 0-21600."
+    },
+    "userinfo": {
+      "name": "userinfo",
+      "description": "Shows user information",
+      "title": "👤 User Information",
+      "id": "🆔 ID",
+      "joined_server": "📅 Joined Server",
+      "joined_discord": "📅 Joined Discord",
+      "roles": "🏷️ Roles",
+      "status": "📊 Status",
+      "nickname": "📝 Nickname"
+    },
+    "serverinfo": {
+      "name": "serverinfo",
+      "description": "Shows server information",
+      "title": "🏰 Server Information",
+      "owner": "👑 Owner",
+      "created": "📅 Created",
+      "members": "👥 Members",
+      "channels": "📺 Channels", 
+      "roles": "🏷️ Roles",
+      "boosts": "🚀 Boosts"
+    },
+    "help": {
+      "name": "help",
+      "description": "Shows help menu",
+      "title": "📚 Help Menu",
+      "moderation": "🛡️ Moderation",
+      "utility": "🔧 Utility",
+      "settings": "⚙️ Settings",
+      "automod": "🤖 Auto Moderation"
+    }
+  },
+  "settings": {
+    "language_set": "✅ Server language set to **English**!",
+    "prefix_set": "✅ Command prefix set to `{prefix}`!",
+    "welcome_channel_set": "✅ Welcome channel set to {channel}!",
+    "log_channel_set": "✅ Log channel set to {channel}!",
+    "mute_role_set": "✅ Mute role set to {role}!"
+  },
+  "errors": {
+    "no_permission": "No Permission",
+    "missing_permissions": "You don't have the required permissions to use this command!",
+    "bot_no_permission": "Bot No Permission",
+    "bot_missing_permissions": "The bot doesn't have the required permissions for this action!",
+    "member_not_found": "Member Not Found",
+    "member_not_found_desc": "The specified member was not found!",
+    "cooldown": "Cooldown",
+    "cooldown_desc": "You can use this command again in {:.1f} seconds!",
+    "unknown": "Unknown Error",
+    "invalid_user": "❌ Invalid user!",
+    "cannot_action_self": "❌ You cannot perform this action on yourself!",
+    "cannot_action_owner": "❌ You cannot perform this action on the server owner!",
+    "hierarchy_error": "❌ You don't have permission to perform this action on this user!"
+  },
+  "automod": {
+    "spam_detected": "🚫 Spam detected!",
+    "flood_detected": "🚫 Message flood detected!",
+    "link_detected": "🚫 Link detected!",
+    "invite_detected": "🚫 Invite link detected!",
+    "caps_detected": "🚫 Excessive caps usage detected!",
+    "emoji_spam_detected": "🚫 Emoji spam detected!",
+    "mention_spam_detected": "🚫 Mention spam detected!",
+    "blacklisted_word_detected": "🚫 Blacklisted word detected!"
+  }
+}
