@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: ironward-discord-bot
+    env: python
+    plan: free
+    buildCommand: pip install --upgrade pip && pip install discord.py==2.5.2 python-dotenv==1.1.1 aiohttp==3.12.15 flask==3.1.0 flask-cors==5.0.0 requests==2.32.3 psutil==6.1.1 PyNaCl==1.5.0
+    startCommand: python keep_alive.py
+    envVars:
+      - key: DISCORD_BOT_TOKEN
+        sync: false
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: PORT
+        value: 10000
+    autoDeploy: true
